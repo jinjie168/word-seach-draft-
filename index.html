@@ -1,1310 +1,672 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Word Voyage Game</title>
-    <style>
-        /* ==========================================================================
-           🎨 CSS STYLES (ALL VISUAL EFFECTS & UI DESIGN) - ONLY ENGLISH IN UI
-           ========================================================================== */
-        
-        /* 基础重置与高清背景图设置 */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Word Voyage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ===================== 设计变量 (design tokens) ===================== */
+  :root{
+    --cream:#fff8ec;
+    --ink:#1c2b4a;
+    --ink-soft:#3a4a6b;
+    --gold:#f6b93b;
+    --gold-deep:#c9791a;
+    --sky:#49c6e0;
+    --sky-deep:#1e7f96;
+    --blush:#ff7096;
+    --glass-bg:rgba(255,255,255,0.86);
+    --glass-border:rgba(255,255,255,0.55);
+    --shadow-soft:0 10px 30px rgba(28,43,74,0.25);
+    --radius-lg:28px;
+    --radius-md:18px;
+    --radius-sm:12px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
+  html,body{margin:0; padding:0; height:100%; overflow:hidden; font-family:'Nunito',sans-serif; background:#000;}
+  #app{position:relative; width:100%; height:100vh; height:100dvh; overflow:hidden;}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: url('https://images.unsplash.com/photo-1539650116574-8efeb43e2750?q=80&w=1920') no-repeat center center fixed;
-            background-size: cover;
-            overflow: hidden;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+  /* ===================== 背景层 (background layer) ===================== */
+  .bg-layer{position:absolute; inset:0; z-index:0; overflow:hidden;}
+  .bg-photo{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:opacity .6s ease;}
+  .bg-tint{position:absolute; inset:0; mix-blend-mode:multiply; opacity:.55; transition:background 1s ease;}
+  .bg-vignette{position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 55%, rgba(15,20,35,0.55) 100%);}
 
-        /* 游戏主容器（适配 iPad/电脑屏幕） */
-        #game-container {
-            width: 100%;
-            max-width: 1024px;
-            height: 100%;
-            max-height: 768px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
-        }
+  /* ===================== 通用玻璃组件 (glass components) ===================== */
+  .glass{
+    background:var(--glass-bg);
+    backdrop-filter:blur(14px) saturate(140%);
+    -webkit-backdrop-filter:blur(14px) saturate(140%);
+    border:1px solid var(--glass-border);
+    box-shadow:var(--shadow-soft);
+  }
+  .pill{border-radius:999px; display:flex; align-items:center; gap:8px; padding:8px 16px 8px 8px;}
+  .pill .icon-circle{width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; box-shadow:inset 0 -2px 4px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.2);}
+  .pill .icon-circle.coin{background:radial-gradient(circle at 35% 30%, #ffe9a8, var(--gold) 60%, var(--gold-deep) 100%);}
+  .pill .icon-circle.bulb{background:radial-gradient(circle at 35% 30%, #d6f7ff, var(--sky) 60%, var(--sky-deep) 100%);}
+  .pill .value{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:19px; color:var(--ink); min-width:20px;}
+  .icon-btn{width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; cursor:pointer; border:none; color:var(--ink);}
+  .icon-btn:active{transform:scale(.92);}
+  .icon-btn .sub{position:absolute; bottom:-7px; font-family:'Baloo 2'; font-weight:700; font-size:12px; background:var(--ink); color:#fff; padding:1px 7px; border-radius:10px;}
 
-        /* 全局毛玻璃暗色遮罩（用于弹窗背景） */
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+  /* ===================== 开始画面 (start screen) ===================== */
+  #screen-start{position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px;}
+  .logo-badge{width:96px; height:96px; border-radius:28px; background:linear-gradient(160deg,#fff6de,var(--gold) 55%,var(--gold-deep)); display:flex; align-items:center; justify-content:center; font-size:44px; box-shadow:0 14px 30px rgba(0,0,0,0.35), inset 0 -6px 10px rgba(0,0,0,0.15); margin-bottom:22px;}
+  .title{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:44px; color:#fff; text-shadow:0 4px 18px rgba(0,0,0,0.45); letter-spacing:.5px; margin:0;}
+  .subtitle{font-family:'Nunito'; font-weight:700; font-size:15px; color:#fff; opacity:.9; letter-spacing:3px; text-transform:uppercase; margin:6px 0 40px;}
+  #btn-start{font-family:'Baloo 2'; font-weight:700; font-size:22px; color:#5a3300; background:linear-gradient(180deg,#ffe27a,var(--gold) 55%,var(--gold-deep)); border:none; padding:18px 56px; border-radius:999px; box-shadow:0 10px 0 #a8620f, 0 16px 26px rgba(0,0,0,0.35); cursor:pointer; letter-spacing:1px;}
+  #btn-start:active{transform:translateY(6px); box-shadow:0 4px 0 #a8620f, 0 8px 14px rgba(0,0,0,0.3);}
 
-        .hidden {
-            display: none !important;
-        }
+  /* ===================== 顶部HUD (top HUD) ===================== */
+  #hud-top{position:absolute; top:18px; left:18px; right:18px; z-index:4; display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  #hud-left{display:flex; gap:10px;}
+  #progress-wrap{flex:1; max-width:340px; display:flex; flex-direction:column; align-items:center; gap:4px;}
+  #progress-label{font-family:'Baloo 2'; font-size:11px; letter-spacing:2px; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,0.4); text-transform:uppercase;}
+  #progress-track{position:relative; width:100%; height:16px; border-radius:999px; background:rgba(20,25,40,0.45); border:1px solid rgba(255,255,255,0.35); overflow:visible;}
+  #progress-fill{height:100%; border-radius:999px; background:linear-gradient(90deg,#7be7c1,var(--sky)); transition:width .5s cubic-bezier(.2,.8,.3,1);}
+  #progress-gift{position:absolute; right:-4px; top:50%; transform:translateY(-50%); font-size:22px; filter:drop-shadow(0 3px 4px rgba(0,0,0,0.4));}
 
-        /* ==========================================
-           顶部状态栏 (Top Bar)
-           ========================================== */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            z-index: 10;
-        }
+  /* ===================== 游戏画面 (game screen) ===================== */
+  #screen-game{position:absolute; inset:0; z-index:1; display:none;}
+  #level-tag{position:absolute; top:64px; left:50%; transform:translateX(-50%); font-family:'Baloo 2'; font-weight:700; font-size:13px; color:#fff; background:rgba(20,25,40,0.4); padding:4px 16px; border-radius:999px; letter-spacing:2px; text-transform:uppercase; z-index:4;}
 
-        /* 金币与灯泡资产标签 */
-        .asset-group {
-            display: flex;
-            gap: 15px;
-        }
+  #grid-area{position:absolute; left:6%; top:38%; transform:translateY(-50%); z-index:2; display:grid; gap:8px;}
+  .tile{width:58px; height:58px; border-radius:14px; position:relative; display:flex; align-items:center; justify-content:center;}
+  .tile.blank{background:linear-gradient(180deg,#fffdf7,#fbeed8); box-shadow:0 4px 0 rgba(150,110,50,0.35), inset 0 2px 3px rgba(255,255,255,0.8), 0 6px 10px rgba(0,0,0,0.18);}
+  .tile.empty{background:transparent; box-shadow:none;}
+  .tile .letter{font-family:'Baloo 2'; font-weight:800; font-size:26px; color:var(--ink); opacity:0; transform:scale(.4); transition:all .35s cubic-bezier(.2,1.4,.4,1);}
+  .tile.revealed .letter{opacity:1; transform:scale(1);}
+  .tile .peek{position:absolute; font-size:14px; opacity:.55; filter:drop-shadow(0 1px 1px rgba(0,0,0,.3));}
+  .tile.revealed .peek{display:none;}
+  .tile.bounce{animation:tileBounce .5s;}
+  @keyframes tileBounce{0%{transform:scale(1);}35%{transform:scale(1.18);}100%{transform:scale(1);}}
 
-        .asset-badge {
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            padding: 5px 15px 5px 5px;
-            color: #fff;
-            font-weight: bold;
-            font-size: 18px;
-            min-width: 100px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
+  #wheel-zone{position:absolute; right:6%; top:56%; transform:translateY(-50%); z-index:3; display:flex; flex-direction:column; align-items:center;}
+  #word-preview{min-height:34px; margin-bottom:10px; font-family:'Baloo 2'; font-weight:700; font-size:24px; letter-spacing:4px; color:#fff; text-shadow:0 3px 10px rgba(0,0,0,0.5);}
+  #wheel-outer{position:relative; width:220px; height:220px;}
+  #wheel-circle{position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle at 32% 28%, #ffffff, #f4ecd8 70%, #ece0c4); box-shadow:0 18px 34px rgba(0,0,0,0.4), inset 0 -8px 16px rgba(180,140,70,0.25), inset 0 6px 10px rgba(255,255,255,0.9);}
+  #wheel-svg{position:absolute; inset:0; width:100%; height:100%; pointer-events:none;}
+  #wheel-svg polyline{fill:none; stroke:var(--sky-deep); stroke-width:6; stroke-linecap:round; stroke-linejoin:round; opacity:.85;}
+  .letter-btn{position:absolute; width:56px; height:56px; margin:-28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Baloo 2'; font-weight:800; font-size:26px; color:var(--ink); cursor:pointer; transition:transform .12s;}
+  .letter-btn.active{background:radial-gradient(circle at 35% 30%,#fff2c4,var(--gold)); color:#5a3300; transform:scale(1.12); box-shadow:0 6px 14px rgba(0,0,0,0.3);}
+  #wheel-shuffle{position:absolute; left:50%; top:50%; width:44px; height:44px; margin:-22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; color:#9a8a6a; cursor:pointer; background:rgba(255,255,255,0.5);}
+  #wheel-shuffle:active{transform:scale(.9) rotate(120deg); transition:transform .3s;}
 
-        .asset-badge svg {
-            width: 30px;
-            height: 30px;
-            margin-right: 8px;
-        }
+  #hint-btn{position:absolute; left:-64px; top:6px;}
+  #hint-btn .icon-circle-lg{width:56px; height:56px; border-radius:50%; background:linear-gradient(180deg,#2b3552,#151c30); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--sky); box-shadow:0 8px 16px rgba(0,0,0,0.35); position:relative;}
+  #hint-btn .icon-circle-lg span.n{font-family:'Baloo 2'; font-weight:800; font-size:13px; color:#fff;}
+  #spin-launcher{position:absolute; left:-64px; bottom:6px;}
+  #spin-launcher .icon-circle-lg{width:56px; height:56px; border-radius:50%; background:linear-gradient(180deg,#2b3552,#151c30); display:flex; align-items:center; justify-content:center; color:var(--blush); box-shadow:0 8px 16px rgba(0,0,0,0.35); font-size:24px;}
 
-        .icon-btn {
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: transform 0.1s;
-        }
+  /* ===================== 弹窗 (modals) ===================== */
+  .modal-backdrop{position:absolute; inset:0; background:rgba(10,14,26,0.55); z-index:10; display:none; align-items:center; justify-content:center; padding:24px;}
+  .modal-card{width:100%; max-width:380px; border-radius:var(--radius-lg); padding:26px 22px 22px; text-align:center; position:relative;}
+  .modal-card .close-x{position:absolute; top:14px; right:16px; font-size:20px; color:var(--ink-soft); cursor:pointer; background:none; border:none;}
+  .modal-title{font-family:'Baloo 2'; font-weight:800; font-size:22px; color:var(--ink); letter-spacing:1px; margin:0 0 16px;}
 
-        .icon-btn:active {
-            transform: scale(0.9);
-        }
+  /* settings */
+  .settings-row{display:flex; justify-content:center; gap:16px; margin-top:6px;}
+  .settings-row .icon-btn{background:linear-gradient(180deg,#6fb3f0,#3b7fd1); color:#fff; box-shadow:0 5px 0 #2b5f9e;}
+  .settings-row .icon-btn.green{background:linear-gradient(180deg,#8de3a4,#4bb56f); box-shadow:0 5px 0 #2f8850;}
 
-        /* 顶部中间的绿色进度条系统 */
-        .progress-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            flex-grow: 1;
-            max-width: 300px;
-            margin: 0 20px;
-        }
+  /* spin wheel modal */
+  #spin-wheel-wrap{position:relative; width:250px; height:250px; margin:10px auto 22px;}
+  #spin-wheel-svg{width:100%; height:100%; transition:transform 3.2s cubic-bezier(.15,.85,.25,1);}
+  #spin-pointer{position:absolute; top:-8px; left:50%; transform:translateX(-50%); font-size:26px; filter:drop-shadow(0 3px 3px rgba(0,0,0,.4)); z-index:2;}
+  #btn-spin{font-family:'Baloo 2'; font-weight:700; font-size:17px; color:#fff; border:none; width:100%; padding:15px; border-radius:999px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;}
+  #btn-spin.free{background:linear-gradient(180deg,#8de3a4,#3fa563); box-shadow:0 6px 0 #2c7c48;}
+  #btn-spin.ad{background:linear-gradient(180deg,#6fb3f0,#3b7fd1); box-shadow:0 6px 0 #2b5f9e;}
+  #btn-spin:active{transform:translateY(5px); box-shadow:none;}
 
-        .progress-title {
-            color: #fff;
-            font-size: 14px;
-            font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-            margin-bottom: 5px;
-            letter-spacing: 1px;
-        }
+  /* gift / level complete */
+  .reward-row{display:flex; justify-content:center; gap:18px; margin:18px 0 22px;}
+  .reward-chip{display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .reward-chip .icon-circle{width:52px; height:52px; font-size:24px;}
+  .reward-chip .amt{font-family:'Baloo 2'; font-weight:800; font-size:17px; color:var(--ink);}
+  .btn-primary{font-family:'Baloo 2'; font-weight:700; font-size:18px; color:#5a3300; background:linear-gradient(180deg,#ffe27a,var(--gold) 55%,var(--gold-deep)); border:none; padding:14px 40px; border-radius:999px; box-shadow:0 7px 0 #a8620f; cursor:pointer;}
+  .btn-primary:active{transform:translateY(5px); box-shadow:none;}
 
-        .progress-bar-bg {
-            width: 100%;
-            height: 18px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 9px;
-            border: 1.5px solid rgba(255,255,255,0.3);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-        }
+  #toast{position:absolute; top:100px; left:50%; transform:translateX(-50%) translateY(-14px); z-index:20; padding:10px 22px; border-radius:999px; font-family:'Baloo 2'; font-weight:700; font-size:14px; color:var(--ink); opacity:0; transition:all .3s; pointer-events:none;}
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
-        .progress-bar-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #4CAF50, #8BC34A);
-            box-shadow: 0 0 8px #4CAF50;
-            transition: width 0.5s ease-out;
-        }
-
-        .progress-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            color: #fff;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .gift-box-icon {
-            position: absolute;
-            right: -5px;
-            top: -8px;
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-3px); }
-        }
-
-        /* ==========================================
-           语言选择主界面 (Language / Start Main Menu)
-           ========================================== */
-        
-        
-        .play-btn {
-            background: linear-gradient(180deg, #76C733 0%, #4CA814 100%);
-            color: white;
-            padding: 16px 80px;
-            border-radius: 30px;
-            font-size: 24px;
-            font-weight: bold;
-            border: none;
-            box-shadow: 0 8px 20px rgba(76,168,20,0.5);
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: transform 0.1s;
-        }
-
-        .play-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* ==========================================
-           核心游戏区域 (Core Gameplay Layout)
-           ========================================== */
-        .game-main-area {
-            display: flex;
-            width: 100%;
-            height: 80%;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 40px;
-        }
-
-        /* 左侧：填字谜题网格容器 */
-        .crossword-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            height: 100%;
-        }
-
-        .grid-matrix {
-            position: relative;
-        }
-
-        /* 每一个单独的字母方格样式 */
-        .letter-cell {
-            position: absolute;
-            width: 55px;
-            height: 55px;
-            background: #F4EFEA;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 26px;
-            font-weight: bold;
-            color: #2E3E5C;
-            text-transform: uppercase;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
-        }
-
-        /* 方格内置奖励小图标（金币或灯泡） */
-        .cell-reward {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            bottom: 2px;
-            right: 2px;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-
-        .cell-pop {
-            transform: scale(1.15);
-            background: #FFF !important;
-        }
-
-        /* 右侧：圆环操作盘区域 */
-        .wheel-controls-wrapper {
-            width: 340px;
-            height: 340px;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* 侧边功能辅助按钮（铁锤提示、普通提示、抽奖轮盘入口） */
-        .side-action-btn {
-            position: absolute;
-            width: 65px;
-            height: 65px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #fff;
-            font-size: 11px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            z-index: 5;
-        }
-
-        .side-action-btn svg { width: 28px; height: 28px; margin-bottom: 2px;}
-        .side-action-btn span { color: #8BE33B; font-size: 10px; }
-
-        #btn-hammer { left: -30px; top: 70px; }
-        #btn-hint { right: -30px; top: 70px; }
-        #btn-lucky-wheel { left: -30px; bottom: 30px; border-color: #FFD700; }
-        .badge-dot {
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            background: #FF3B30;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 11px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* 核心白盘结构与 SVG 字母连线画布 */
-        .interactive-circle-plate {
-            width: 260px;
-            height: 260px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 50%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            position: relative;
-            touch-action: none;
-        }
-
-        .drawing-svg-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        /* 环状排布的英文字母节点 */
-        .wheel-letter-node {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 36px;
-            font-weight: 800;
-            color: #2C3E6B;
-            transform: translate(-50%, -50%);
-            cursor: pointer;
-            z-index: 3;
-            transition: transform 0.1s;
-        }
-
-        .wheel-letter-node.active-node {
-            color: #5B7FFF;
-            transform: translate(-50%, -50%) scale(1.3);
-            text-shadow: 0 0 10px rgba(91,127,255,0.6);
-        }
-
-        /* 盘中心的打乱重组按钮 */
-        .shuffle-center-btn {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 50px;
-            height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 4;
-        }
-
-        /* 正在输入的单词浮动预览气泡 */
-        .word-preview-bubble {
-            position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(44, 62, 107, 0.9);
-            color: white;
-            padding: 8px 24px;
-            border-radius: 20px;
-            font-size: 22px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s;
-            z-index: 10;
-            text-transform: uppercase;
-        }
-
-        .word-preview-bubble.show-bubble {
-            opacity: 1;
-        }
-
-        /* ==========================================
-           通用现代弹窗组件 (Popups & Modals)
-           ========================================== */
-        .modal-popup-box {
-            background: #EAF0FF;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 360px;
-            padding: 25px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-            position: relative;
-            text-align: center;
-            border: 3px solid #FFF;
-        }
-
-        .modal-close-x {
-            position: absolute;
-            top: 12px;
-            right: 15px;
-            font-size: 22px;
-            color: #8A94A6;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .modal-headline {
-            color: #2C3E6B;
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-        }
-
-        /* 设置弹窗按钮布局 */
-        .settings-flex-row {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 10px;
-        }
-
-        .setting-circle-btn {
-            width: 60px;
-            height: 60px;
-            background: #5B7FFF;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 6px 12px rgba(91,127,255,0.3);
-            cursor: pointer;
-        }
-        .setting-circle-btn.alt-color { background: #76C733; box-shadow: 0 6px 12px rgba(118,199,51,0.3); }
-
-        /* ==========================================
-           幸运大转盘组件 (Lucky Lottery Wheel)
-           ========================================== */
-        .lottery-wheel-case {
-            position: relative;
-            width: 280px;
-            height: 280px;
-            margin: 0 auto 20px auto;
-        }
-
-        .lottery-wheel-disk {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 8px solid #5B7FFF;
-            background: conic-gradient(
-                #4CAF50 0deg 45deg, #FF9800 45deg 90deg, 
-                #E91E63 90deg 135deg, #9C27B0 135deg 180deg,
-                #00BCD4 180deg 225deg, #FFEB3B 225deg 270deg, 
-                #FF5722 270deg 315deg, #03A9F4 315deg 360deg
-            );
-            position: relative;
-            transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-        }
-
-        .wheel-pin-indicator {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 25px solid #FFD700;
-            z-index: 10;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-        }
-
-        .wheel-center-cap {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-            background: #FFD700;
-            border-radius: 50%;
-            border: 3px solid #FFF;
-            z-index: 5;
-        }
-
-        /* 奖品文字环绕排布样式 */
-        .disk-segment-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            height: 50%;
-            width: 30px;
-            transform-origin: 50% 0%;
-            color: white;
-            font-weight: bold;
-            font-size: 13px;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-            text-align: center;
-            padding-top: 60px;
-        }
-
-        .spin-action-btn {
-            background: linear-gradient(180deg, #76C733 0%, #4CA814 100%);
-            color: white;
-            padding: 12px 50px;
-            border-radius: 25px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            box-sizing: border-box;
-            box-shadow: 0 5px 15px rgba(76,168,20,0.4);
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* ==========================================
-           看广告模拟遮罩 (Ad Simulation Panel)
-           ========================================== */
-        .ad-countdown-text {
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-        }
-        .ad-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #FFF;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ==========================================
-           通关与宝箱奖励弹窗 (Victory & Gift Panels)
-           ========================================== */
-        .reward-showcase {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 20px 0;
-        }
-        .reward-item-box {
-            background: white;
-            padding: 10px 20px;
-            border-radius: 15px;
-            border: 2px solid #D0E0FF;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-weight: bold;
-            color: #2C3E6B;
-            min-width: 90px;
-        }
-        .reward-item-box svg { width: 40px; height: 40px; margin-bottom: 5px; }
-
-        .action-submit-btn {
-            background: #5B7FFF;
-            color: white;
-            padding: 12px 40px;
-            border-radius: 25px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(91,127,255,0.4);
-            text-transform: uppercase;
-        }
-    </style>
+  @media (max-width:640px){
+    .tile{width:46px; height:46px;}
+    .tile .letter{font-size:21px;}
+    #wheel-outer{width:190px; height:190px;}
+    .letter-btn{width:48px; height:48px; margin:-24px; font-size:22px;}
+    #grid-area{left:5%;}
+    #wheel-zone{right:4%;}
+    #hint-btn,#spin-launcher{left:-58px;}
+  }
+</style>
 </head>
 <body>
+<div id="app">
 
-    <div id="game-container">
-        
-        <div class="top-bar">
-            <div class="asset-group">
-                <div class="asset-badge">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FFD700"/><circle cx="12" cy="12" r="7" fill="#FFA500"/><path d="M12 7v10M9 10h5.5a2.5 2.5 0 0 0 0-5H12M12 14h5.5a2.5 2.5 0 0 1 0 5H9" stroke="#FFF" stroke-width="2" fill="none"/></svg>
-                    <span id="label-coins-count">250</span>
-                </div>
-                <div class="asset-badge">
-                    <svg viewBox="0 0 24 24"><path d="M9 21h6m-5-3h4m-5.5-3.5A7.5 7.5 0 1 1 16.5 14.5L15 18H9l-1.5-3.5z" fill="#FFEB3B" stroke="#FFA500" stroke-width="1.5"/><path d="M12 3v2M7 5l1.5 1.5M17 5l-1.5 1.5" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/></svg>
-                    <span id="label-bulbs-count">5</span>
-                </div>
-            </div>
+  <div class="bg-layer">
+    <img id="bg-photo-a" class="bg-photo" src="" alt="">
+    <div id="bg-tint" class="bg-tint"></div>
+    <div class="bg-vignette"></div>
+  </div>
 
-            <div class="progress-container">
-                <span class="progress-title" id="progress-gift-title">VOYAGE PROGRESS</span>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" id="progress-bar-fill-node"></div>
-                    <span class="progress-text" id="progress-numerical-text">0/5</span>
-                    <div class="gift-box-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="12" rx="2" fill="#E91E63"/><rect x="2" y="6" width="20" height="3" rx="1" fill="#FF4081"/><path d="M12 6a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm0 0a3 3 0 1 1 3-3 3 3 0 0 1-3 3z" fill="#FFD700"/><path d="M11 6h2v15h-2z" fill="#FFD700"/></svg>
-                    </div>
-                </div>
-            </div>
+  <!-- ================= START SCREEN ================= -->
+  <div id="screen-start">
+    <div class="logo-badge">🔤</div>
+    <h1 class="title">WORD VOYAGE</h1>
+    <p class="subtitle">100 Levels &middot; Connect &amp; Collect</p>
+    <button id="btn-start">START GAME</button>
+  </div>
 
-            <div class="icon-btn" id="btn-trigger-settings">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            </div>
-        </div>
-
-        <div class="game-main-area" id="panel-start-menu">
-            <div style="margin: 0 auto;">
-                <div class="menu-panel">
-                    <h2 class="menu-title">SELECT LANGUAGE</h2>
-                    <div class="lang-selector">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                        English
-                    </div>
-                    <br>
-                    <button class="play-btn" id="btn-action-play">Play</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="game-main-area hidden" id="panel-gameplay-core">
-            <div class="crossword-container">
-                <div class="grid-matrix" id="puzzle-matrix-board"></div>
-            </div>
-
-            <div class="wheel-controls-wrapper">
-                <div class="side-action-btn" id="btn-hammer">
-                    <svg viewBox="0 0 24 24" fill="#FFF"><path d="M21 6.5c.3-.3.3-.8 0-1.1l-3.4-3.4c-.3-.3-.8-.3-1.1 0l-3.2 3.2 4.5 4.5L21 6.5zM3.4 17.7l8.2-8.2 3.1 3.1-8.2 8.2c-.3.3-.8.3-1.1 0l-2-2c-.3-.3-.3-.8 0-1.1z"/></svg>
-                    <span>200</span>
-                </div>
-                <div class="side-action-btn" id="btn-hint">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2"><path d="M9 21h6m-5-3h4m-5.5-3.5A7.5 7.5 0 1 1 16.5 14.5L15 18H9l-1.5-3.5z"/></svg>
-                    <span>100</span>
-                </div>
-                <div class="side-action-btn" id="btn-lucky-wheel">
-                    <svg viewBox="0 0 24 24" fill="#FFD700"><circle cx="12" cy="12" r="10" fill="none" stroke="#FFD700" stroke-width="2"/><path d="M12 2v10l5 5"/></svg>
-                    <div class="badge-dot" id="wheel-free-dot">1</div>
-                </div>
-
-                <div class="interactive-circle-plate" id="letter-touch-plate">
-                    <svg class="drawing-svg-canvas" id="link-lines-svg-canvas"></svg>
-                    <div id="dynamic-letters-container"></div>
-                    <div class="shuffle-center-btn" id="btn-action-shuffle">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2C3E6B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
-                    </div>
-                </div>
-
-                <div class="word-preview-bubble" id="live-word-bubble"></div>
-            </div>
-        </div>
-
-        <div></div>
-
-        <div class="overlay hidden" id="modal-settings">
-            <div class="modal-popup-box">
-                <span class="modal-close-x" id="close-settings-x">×</span>
-                <h3 class="modal-headline" id="settings-level-title">SETTINGS</h3>
-                <div class="settings-flex-row">
-                    <div class="setting-circle-btn" id="btn-setting-home">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-                    </div>
-                    <div class="setting-circle-btn alt-color">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-                    </div>
-                    <div class="setting-circle-btn alt-color">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                    </div>
-                </div>
-                <div style="color: #8A94A6; font-size: 11px; margin-top: 15px;">Build 1.0</div>
-            </div>
-        </div>
-
-        <div class="overlay hidden" id="modal-lucky-wheel">
-            <div class="modal-popup-box" style="max-width: 380px;">
-                <span class="modal-close-x" id="close-wheel-x">×</span>
-                <h3 class="modal-headline">LUCKY SPIN</h3>
-                
-                <div class="lottery-wheel-case">
-                    <div class="wheel-pin-indicator"></div>
-                    <div class="wheel-center-cap"></div>
-                    <div class="lottery-wheel-disk" id="spinning-disk-node">
-                        </div>
-                </div>
-
-                <button class="spin-action-btn" id="btn-action-spin">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                    <span id="label-spin-btn-text">SPIN (FREE)</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="overlay hidden" id="modal-ad-simulator">
-            <div class="ad-countdown-text">
-                <div>ADVERTISEMENT PLAYING...</div>
-                <div class="ad-spinner"></div>
-                <div style="font-size: 32px; color: #FFD700;" id="label-ad-timer">5</div>
-            </div>
-        </div>
-
-        <div class="overlay hidden" id="modal-level-clear">
-            <div class="modal-popup-box">
-                <h3 class="modal-headline" style="color: #4CA814; font-size: 26px;">CONGRATS!</h3>
-                <div style="color: #2C3E6B; font-weight: bold; margin-bottom: 10px;" id="label-clear-level-name">LEVEL 1</div>
-                <div style="color: #7F8C8D; font-size: 14px;">YOU EARNED:</div>
-                
-                <div class="reward-showcase">
-                    <div class="reward-item-box">
-                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FFD700"/><circle cx="12" cy="12" r="7" fill="#FFA500"/><path d="M12 7v10M9 10h5.5a2.5 2.5 0 0 0 0-5H12M12 14h5.5a2.5 2.5 0 0 1 0 5H9" stroke="#FFF" stroke-width="2" fill="none"/></svg>
-                        <span id="label-earned-coins">+20</span>
-                    </div>
-                </div>
-
-                <button class="action-submit-btn" id="btn-action-next-level">NEXT LEVEL</button>
-            </div>
-        </div>
-
-        <div class="overlay hidden" id="modal-mystery-gift">
-            <div class="modal-popup-box" style="border-color: #FFD700; background: #FFF5E6;">
-                <h3 class="modal-headline" style="color: #E91E63; font-size: 24px;">MYSTERY GIFT!</h3>
-                <div style="color: #D4AC0D; font-weight: bold; margin-bottom: 15px;">5-LEVEL MILESTONE REACHED</div>
-                
-                <div class="reward-showcase">
-                    <div class="reward-item-box" style="border-color: #FFD700;">
-                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FFD700"/><circle cx="12" cy="12" r="7" fill="#FFA500"/><path d="M12 7v10M9 10h5.5a2.5 2.5 0 0 0 0-5H12M12 14h5.5a2.5 2.5 0 0 1 0 5H9" stroke="#FFF" stroke-width="2" fill="none"/></svg>
-                        <span>+100</span>
-                    </div>
-                    <div class="reward-item-box" style="border-color: #FFD700;">
-                        <svg viewBox="0 0 24 24"><path d="M9 21h6m-5-3h4m-5.5-3.5A7.5 7.5 0 1 1 16.5 14.5L15 18H9l-1.5-3.5z" fill="#FFEB3B" stroke="#FFA500" stroke-width="1.5"/></svg>
-                        <span>+1 BULB</span>
-                    </div>
-                </div>
-
-                <button class="action-submit-btn" id="btn-action-claim-gift" style="background: #E91E63; box-shadow: 0 5px 15px rgba(233,30,99,0.4);">CLAIM ALL</button>
-            </div>
-        </div>
-
+  <!-- ================= TOP HUD ================= -->
+  <div id="hud-top">
+    <div id="hud-left">
+      <div class="pill glass"><span class="icon-circle coin">🪙</span><span class="value" id="coin-count">0</span></div>
+      <div class="pill glass"><span class="icon-circle bulb">💡</span><span class="value" id="bulb-count">0</span></div>
     </div>
+    <div id="progress-wrap">
+      <span id="progress-label">Voyage Progress</span>
+      <div id="progress-track"><div id="progress-fill" style="width:0%"></div><span id="progress-gift">🎁</span></div>
+    </div>
+    <button class="icon-btn glass" id="btn-settings">⚙️</button>
+  </div>
 
-    <script>
-        // ==========================================
-        // 📚 100个关卡核心数据库 (每一关完全独立不重复)
-        // ==========================================
-        const GAME_LEVELS_DATABASE = [
-            { letters: ["A", "T", "C"], targetWords: ["CAT", "ACT"], gridData: { "CAT": {x:0, y:0, d:"H"}, "ACT": {x:1, y:0, d:"V"} }, coinCells: [{w:"CAT", idx:2}], bulbCells: [] },
-            { letters: ["D", "G", "O"], targetWords: ["DOG", "GOD"], gridData: { "DOG": {x:0, y:0, d:"H"}, "GOD": {x:2, y:0, d:"V"} }, coinCells: [], bulbCells: [{w:"GOD", idx:1}] },
-            { letters: ["N", "U", "S"], targetWords: ["SUN", "NUS"], gridData: { "SUN": {x:0, y:1, d:"H"}, "NUS": {x:2, y:0, d:"V"} }, coinCells: [{w:"SUN", idx:0}], bulbCells: [] },
-            { letters: ["T", "E", "N"], targetWords: ["NET", "TEN"], gridData: { "NET": {x:0, y:0, d:"H"}, "TEN": {x:0, y:0, d:"V"} }, coinCells: [], bulbCells: [] },
-            { letters: ["O", "N", "W"], targetWords: ["NOW", "WON"], gridData: { "NOW": {x:0, y:0, d:"H"}, "WON": {x:2, y:0, d:"V"} }, coinCells: [{w:"NOW", idx:1}], bulbCells: [{w:"WON", idx:1}] },
-            { letters: ["A", "N", "D"], targetWords: ["AND", "DAN"], gridData: { "AND": {x:0, y:0, d:"H"}, "DAN": {x:1, y:0, d:"V"} }, coinCells: [], bulbCells: [] },
-            { letters: ["R", "A", "C"], targetWords: ["CAR", "ARC"], gridData: { "CAR": {x:0, y:0, d:"H"}, "ARC": {x:1, y:0, d:"V"} }, coinCells: [{w:"CAR", idx:2}], bulbCells: [] },
-            { letters: ["B", "U", "S"], targetWords: ["BUS", "SUB"], gridData: { "BUS": {x:0, y:1, d:"H"}, "SUB": {x:0, y:0, d:"V"} }, coinCells: [], bulbCells: [] },
-            { letters: ["F", "L", "Y"], targetWords: ["FLY"], gridData: { "FLY": {x:0, y:0, d:"H"} }, coinCells: [{w:"FLY", idx:0}], bulbCells: [] },
-            { letters: ["K", "E", "Y"], targetWords: ["KEY"], gridData: { "KEY": {x:0, y:0, d:"V"} }, coinCells: [], bulbCells: [{w:"KEY", idx:2}] }
-        ];
+  <!-- ================= GAME SCREEN ================= -->
+  <div id="screen-game">
+    <div id="level-tag">Level 1</div>
+    <div id="grid-area"></div>
 
-        // 自动将剩余的关卡数据动态补齐至100关，确保由浅入深且不重复
-        const EXTENDED_VOCABULARY = [
-            {l:["L", "I", "P", "S"], w:["LIPS", "SLIP", "LIP"]}, {l:["T", "E", "A", "M"], w:["TEAM", "MEAT", "MATE"]},
-            {l:["C", "O", "C", "O"], w:["COCO", "COOK"]}, {l:["R", "O",, "S", "E"], w:["ROSE", "SORE", "EROS"]},
-            {l:["F", "I", "R", "E"], w:["FIRE", "RIFE", "FIR"]}, {l:["W", "I", "N", "D"], w:["WIND", "WINE", "WIN"]},
-            {l:["B", "I", "R", "D"], w:["BIRD", "RIB", "BID"]}, {l:["F", "A", "S", "T"], w:["FAST", "FAT", "SAT"]},
-            {l:["B", "O", "A", "T"], w:["BOAT", "BAT", "CAT"]}, {l:["K", "I", "N", "G"], w:["KING", "INK", "KIN"]}
-        ];
-        for(let idx = 11; idx <= 100; idx++) {
-            let dataPreset = EXTENDED_VOCABULARY[(idx - 11) % EXTENDED_VOCABULARY.length];
-            let horizontalWord = dataPreset.w[0];
-            let verticalWord = dataPreset.w[1] || dataPreset.w[0];
-            let structures = {};
-            structures[horizontalWord] = {x: 0, y: 1, d: "H"};
-            if(dataPreset.w[1]) structures[verticalWord] = {x: 1, y: 0, d: "V"};
-            
-            GAME_LEVELS_DATABASE.push({
-                letters: [...dataPreset.l],
-                targetWords: [...dataPreset.w],
-                gridData: structures,
-                coinCells: idx % 3 === 0 ? [{w: horizontalWord, idx: 0}] : [],
-                bulbCells: idx % 7 === 0 ? [{w: horizontalWord, idx: 1}] : []
-            });
+    <div id="wheel-zone">
+      <div id="word-preview"></div>
+      <div id="wheel-outer">
+        <div id="hint-btn">
+          <div class="icon-circle-lg" id="btn-hint">💡<span class="n" id="hint-cost">1</span></div>
+        </div>
+        <div id="spin-launcher">
+          <div class="icon-circle-lg" id="btn-spin-open">🎡</div>
+        </div>
+        <div id="wheel-circle"></div>
+        <svg id="wheel-svg" viewBox="0 0 220 220"><polyline id="wheel-line" points=""></polyline></svg>
+        <div id="wheel-letters"></div>
+        <div id="wheel-shuffle">🔀</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="glass"></div>
+
+  <!-- ================= SETTINGS MODAL ================= -->
+  <div class="modal-backdrop" id="modal-settings">
+    <div class="modal-card glass">
+      <button class="close-x" data-close="modal-settings">✕</button>
+      <p class="modal-title">Settings</p>
+      <div class="settings-row">
+        <button class="icon-btn" id="btn-home">🏠</button>
+        <button class="icon-btn green" id="btn-sound">🔊</button>
+        <button class="icon-btn green" id="btn-music">🎵</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SPIN MODAL ================= -->
+  <div class="modal-backdrop" id="modal-spin">
+    <div class="modal-card glass">
+      <button class="close-x" data-close="modal-spin">✕</button>
+      <p class="modal-title">Lucky Spin</p>
+      <div id="spin-wheel-wrap">
+        <span id="spin-pointer">🔻</span>
+        <svg id="spin-wheel-svg" viewBox="0 0 200 200"></svg>
+      </div>
+      <button id="btn-spin"></button>
+    </div>
+  </div>
+
+  <!-- ================= MYSTERY GIFT MODAL ================= -->
+  <div class="modal-backdrop" id="modal-gift">
+    <div class="modal-card glass">
+      <p class="modal-title">Mystery Gift!</p>
+      <div style="font-size:52px;">🎁</div>
+      <div class="reward-row" id="gift-rewards"></div>
+      <button class="btn-primary" id="btn-gift-claim">CLAIM</button>
+    </div>
+  </div>
+
+  <!-- ================= LEVEL COMPLETE MODAL ================= -->
+  <div class="modal-backdrop" id="modal-complete">
+    <div class="modal-card glass">
+      <p class="modal-title">Level Complete!</p>
+      <div style="font-size:46px;">⭐</div>
+      <div class="reward-row" id="complete-rewards"></div>
+      <button class="btn-primary" id="btn-next-level">CONTINUE</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =================================================================
+   数据区 (DATA) —— 主题背景 & 关卡数据
+   ================================================================= */
+const THEMES = [
+  { name:'Desert Dunes',  seed:'wv-desert-01', tint:'linear-gradient(160deg,#ffb15e,#7a3b12)' },
+  { name:'Emerald Forest',seed:'wv-forest-02', tint:'linear-gradient(160deg,#8fe3b0,#0f3d2e)' },
+  { name:'Ocean Breeze',  seed:'wv-ocean-03',  tint:'linear-gradient(160deg,#7fd8ff,#0b3d5c)' },
+];
+
+// 每关的格子坐标 [row,col]，letters 为轮盘字母（可重复使用）
+// bonus: {cell:[r,c], type:'coin'|'bulb', amount}
+const LEVELS = [
+  { letters:['C','A','T'],
+    words:[ {word:'CAT', cells:[[0,0],[0,1],[0,2]]}, {word:'ACT', cells:[[0,1],[1,1],[2,1]]} ],
+    bonus:[{cell:[2,1], type:'coin', amount:15}] },
+
+  { letters:['D','O','G'],
+    words:[ {word:'DOG', cells:[[0,0],[0,1],[0,2]]}, {word:'GOD', cells:[[0,2],[1,2],[2,2]]} ],
+    bonus:[{cell:[1,2], type:'coin', amount:10}] },
+
+  { letters:['C','A','R','E'],
+    words:[ {word:'CARE', cells:[[0,0],[0,1],[0,2],[0,3]]}, {word:'ACRE', cells:[[0,1],[1,1],[2,1],[3,1]]} ],
+    bonus:[{cell:[3,1], type:'bulb', amount:1}] },
+
+  { letters:['S','T','A','R'],
+    words:[ {word:'STAR', cells:[[0,0],[0,1],[0,2],[0,3]]}, {word:'ARTS', cells:[[0,2],[1,2],[2,2],[3,2]]} ],
+    bonus:[{cell:[2,2], type:'coin', amount:20}] },
+
+  { letters:['P','L','A','N','T'],
+    words:[ {word:'PLANT', cells:[[0,0],[0,1],[0,2],[0,3],[0,4]]}, {word:'NAP', cells:[[0,3],[1,3],[2,3]]} ],
+    bonus:[{cell:[1,3], type:'coin', amount:25}] },
+
+  { letters:['G','R','A','P','E'],
+    words:[ {word:'GRAPE', cells:[[0,0],[0,1],[0,2],[0,3],[0,4]]}, {word:'APE', cells:[[0,2],[1,2],[2,2]]} ],
+    bonus:[{cell:[1,2], type:'coin', amount:30}] },
+];
+
+/* =================================================================
+   状态 (STATE)
+   ================================================================= */
+let coins = 0, bulbs = 0, curLevel = 0;
+let store = { get:(k,d)=>d, set:()=>{} };
+try{
+  localStorage.setItem('__wv_test','1'); localStorage.removeItem('__wv_test');
+  store.get = (k,d)=>{ const v = localStorage.getItem('wv_'+k); return v===null? d : JSON.parse(v); };
+  store.set = (k,v)=>{ try{ localStorage.setItem('wv_'+k, JSON.stringify(v)); }catch(e){} };
+}catch(e){ /* localStorage 不可用时，退回内存状态（仅本次会话有效） */ }
+
+coins = store.get('coins', 0);
+bulbs = store.get('bulbs', 0);
+curLevel = store.get('level', 0);
+
+/* =================================================================
+   背景 (BACKGROUND)
+   ================================================================= */
+function applyTheme(levelIdx){
+  const theme = THEMES[levelIdx % THEMES.length];
+  document.getElementById('bg-photo-a').src = `https://picsum.photos/seed/${theme.seed}/1600/1200`;
+  document.getElementById('bg-tint').style.background = theme.tint;
+}
+
+/* =================================================================
+   HUD 更新
+   ================================================================= */
+function refreshHud(){
+  document.getElementById('coin-count').textContent = coins;
+  document.getElementById('bulb-count').textContent = bulbs;
+  document.getElementById('hint-cost').textContent = '1';
+  const pct = ((curLevel % 5) / 5) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  store.set('coins', coins); store.set('bulbs', bulbs); store.set('level', curLevel);
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._tm);
+  toast._tm = setTimeout(()=>t.classList.remove('show'), 1600);
+}
+
+/* =================================================================
+   关卡渲染 (RENDER LEVEL)
+   ================================================================= */
+let gridState = {}; // "r,c" -> {letter, revealed, bonus}
+let wordsSolved = [];
+
+function loadLevel(idx){
+  const lvl = LEVELS[idx % LEVELS.length];
+  document.getElementById('level-tag').textContent = 'Level ' + (curLevel + 1);
+  applyTheme(idx);
+
+  // 建立 grid 坐标映射
+  gridState = {}; wordsSolved = lvl.words.map(()=>false);
+  let minR=99,maxR=-99,minC=99,maxC=-99;
+  lvl.words.forEach(w=>{
+    w.word.split('').forEach((ch,i)=>{
+      const [r,c] = w.cells[i];
+      gridState[r+','+c] = { letter:ch, revealed:false };
+      minR=Math.min(minR,r); maxR=Math.max(maxR,r);
+      minC=Math.min(minC,c); maxC=Math.max(maxC,c);
+    });
+  });
+  (lvl.bonus||[]).forEach(b=>{
+    const key = b.cell[0]+','+b.cell[1];
+    if(gridState[key]) gridState[key].bonus = { type:b.type, amount:b.amount, claimed:false };
+  });
+
+  const rows = maxR-minR+1, cols = maxC-minC+1;
+  const gridEl = document.getElementById('grid-area');
+  gridEl.style.gridTemplateColumns = `repeat(${cols}, 58px)`;
+  gridEl.style.gridTemplateRows = `repeat(${rows}, 58px)`;
+  gridEl.innerHTML = '';
+  for(let r=minR; r<=maxR; r++){
+    for(let c=minC; c<=maxC; c++){
+      const key = r+','+c;
+      const cellData = gridState[key];
+      const div = document.createElement('div');
+      if(cellData){
+        div.className = 'tile blank';
+        div.id = 'tile-'+key;
+        const letterSpan = document.createElement('span');
+        letterSpan.className = 'letter'; letterSpan.textContent = cellData.letter;
+        div.appendChild(letterSpan);
+        if(cellData.bonus){
+          const peek = document.createElement('span');
+          peek.className = 'peek'; peek.textContent = cellData.bonus.type==='coin' ? '🪙' : '💡';
+          div.appendChild(peek);
         }
+      } else {
+        div.className = 'tile empty';
+      }
+      gridEl.appendChild(div);
+    }
+  }
 
-        // ==========================================
-        // 🪙 游戏全局玩家资产与存档状态数据
-        // ==========================================
-        let playerWallet = { coins: 250, bulbs: 5 };
-        let gameProgressState = { currentLevelIndex: 0, milestoneProgress: 0, isFreeSpinAvailable: true };
-        const WHEEL_REWARDS_CONFIG = [
-            { text: "5 COINS", type: "coin", amount: 5 }, { text: "100 COINS", type: "coin", amount: 100 },
-            { text: "5 COINS", type: "coin", amount: 5 }, { text: "15 COINS", type: "coin", amount: 15 },
-            { text: "1 BULB", type: "bulb", amount: 1 }, { text: "25 COINS", type: "coin", amount: 25 },
-            { text: "50 COINS", type: "coin", amount: 50 }, { text: "80 COINS", type: "coin", amount: 80 }
-        ];
+  renderWheel(lvl.letters);
+  refreshHud();
+}
 
-        // 连线互动运行时状态记录器
-        let interactiveSession = {
-            isTracking: false, activeSelectedLetters: [], activatedNodeElements: [],
-            lastRegisteredX: 0, lastRegisteredY: 0, shuffledLetters: []
-        };
+/* =================================================================
+   轮盘渲染与交互 (WHEEL)
+   ================================================================= */
+let wheelLetters = [];
+let dragging = false, selection = [];
 
-        // ==========================================
-        // 🧩 DOM 节点快速索引获取
-        // ==========================================
-        const uiCoinsLabel = document.getElementById("label-coins-count");
-        const uiBulbsLabel = document.getElementById("label-bulbs-count");
-        const uiProgressBarFill = document.getElementById("progress-bar-fill-node");
-        const uiProgressText = document.getElementById("progress-numerical-text");
-        const puzzleMatrixBoard = document.getElementById("puzzle-matrix-board");
-        const dynamicLettersContainer = document.getElementById("dynamic-letters-container");
-        const linkLinesSvgCanvas = document.getElementById("link-lines-svg-canvas");
-        const liveWordBubble = document.getElementById("live-word-bubble");
-        const touchPlate = document.getElementById("letter-touch-plate");
+function renderWheel(letters){
+  wheelLetters = shuffleArr(letters.slice());
+  const wrap = document.getElementById('wheel-letters');
+  wrap.innerHTML = '';
+  const n = wheelLetters.length;
+  const radius = 78;
+  wheelLetters.forEach((ch,i)=>{
+    const angle = (Math.PI*2 * i / n) - Math.PI/2;
+    const x = 110 + radius*Math.cos(angle);
+    const y = 110 + radius*Math.sin(angle);
+    const btn = document.createElement('div');
+    btn.className = 'letter-btn';
+    btn.textContent = ch;
+    btn.style.left = x+'px'; btn.style.top = y+'px';
+    btn.dataset.idx = i;
+    wrap.appendChild(btn);
+  });
+  document.getElementById('word-preview').textContent = '';
+  clearSelection();
+}
 
-        // 弹窗群索引
-        const popupSettings = document.getElementById("modal-settings");
-        const popupLuckyWheel = document.getElementById("modal-lucky-wheel");
-        const popupAdSimulator = document.getElementById("modal-ad-simulator");
-        const popupLevelClear = document.getElementById("modal-level-clear");
-        const popupMysteryGift = document.getElementById("modal-mystery-gift");
+function shuffleArr(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-        // ==========================================
-        // 🎮 初始化逻辑与核心引擎渲染
-        // ==========================================
-        window.addEventListener("DOMContentLoaded", () => {
-            refreshWalletUI();
-            buildLotteryWheelSegments();
-            
-            // 按钮事件绑定
-            document.getElementById("btn-action-play").addEventListener("click", () => {
-                document.getElementById("panel-start-menu").classList.add("hidden");
-                document.getElementById("panel-gameplay-core").classList.remove("hidden");
-                loadLevel(gameProgressState.currentLevelIndex);
-            });
+function clearSelection(){
+  selection = [];
+  document.querySelectorAll('.letter-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('wheel-line').setAttribute('points','');
+  document.getElementById('word-preview').textContent = '';
+}
 
-            document.getElementById("btn-trigger-settings").addEventListener("click", () => {
-                document.getElementById("settings-level-title").innerText = `LEVEL ${gameProgressState.currentLevelIndex + 1}`;
-                popupSettings.classList.remove("hidden");
-            });
-            document.getElementById("close-settings-x").addEventListener("click", () => popupSettings.classList.add("hidden"));
-            document.getElementById("btn-setting-home").addEventListener("click", () => {
-                popupSettings.classList.add("hidden");
-                document.getElementById("panel-gameplay-core").classList.add("hidden");
-                document.getElementById("panel-start-menu").classList.remove("hidden");
-            });
+function updateSelectionVisual(){
+  document.querySelectorAll('.letter-btn').forEach(b=>b.classList.remove('active'));
+  let pts = [];
+  selection.forEach(idx=>{
+    const b = document.querySelector('.letter-btn[data-idx="'+idx+'"]');
+    b.classList.add('active');
+    pts.push((parseFloat(b.style.left)+28)+','+(parseFloat(b.style.top)+28));
+  });
+  document.getElementById('wheel-line').setAttribute('points', pts.join(' '));
+  document.getElementById('word-preview').textContent = selection.map(i=>wheelLetters[i]).join('');
+}
 
-            document.getElementById("btn-lucky-wheel").addEventListener("click", () => popupLuckyWheel.classList.remove("hidden"));
-            document.getElementById("close-wheel-x").addEventListener("click", () => popupLuckyWheel.classList.add("hidden"));
-            
-            document.getElementById("btn-action-shuffle").addEventListener("click", () => shuffleLettersLayout());
-            document.getElementById("btn-action-next-level").addEventListener("click", () => advanceToNextLevel());
-            document.getElementById("btn-action-claim-gift").addEventListener("click", () => claimMilestoneMysteryGift());
-            
-            document.getElementById("btn-hint").addEventListener("click", () => applyStandardHintPlugin());
-            document.getElementById("btn-hammer").addEventListener("click", () => applyHammerHintPlugin());
+function pointFromEvent(e){
+  return e.touches && e.touches.length ? e.touches[0] : e;
+}
 
-            setupInteractionListeners();
-        });
+function letterBtnAt(x,y){
+  const el = document.elementFromPoint(x,y);
+  return el && el.classList.contains('letter-btn') ? el : null;
+}
 
-        function refreshWalletUI() {
-            uiCoinsLabel.innerText = playerWallet.coins;
-            uiBulbsLabel.innerText = playerWallet.bulbs;
-            document.getElementById("wheel-free-dot").style.display = gameProgressState.isFreeSpinAvailable ? "flex" : "none";
-            document.getElementById("label-spin-btn-text").innerText = gameProgressState.isFreeSpinAvailable ? "SPIN (FREE)" : "SPIN (WATCH AD)";
-            
-            // 渲染进度条结构
-            uiProgressText.innerText = `${gameProgressState.milestoneProgress}/5`;
-            uiProgressBarFill.style.width = `${(gameProgressState.milestoneProgress / 5) * 100}%`;
-        }
+function initWheelEvents(){
+  const zone = document.getElementById('wheel-outer');
+  const start = (e)=>{
+    const p = pointFromEvent(e);
+    const btn = letterBtnAt(p.clientX, p.clientY);
+    if(!btn) return;
+    dragging = true; selection = [parseInt(btn.dataset.idx)];
+    updateSelectionVisual();
+    e.preventDefault();
+  };
+  const move = (e)=>{
+    if(!dragging) return;
+    const p = pointFromEvent(e);
+    const btn = letterBtnAt(p.clientX, p.clientY);
+    if(btn){
+      const idx = parseInt(btn.dataset.idx);
+      if(selection[selection.length-1] !== idx && !selection.includes(idx)){
+        selection.push(idx); updateSelectionVisual();
+      }
+    }
+    e.preventDefault();
+  };
+  const end = ()=>{
+    if(!dragging) return;
+    dragging = false;
+    submitWord();
+  };
+  zone.addEventListener('mousedown', start);
+  zone.addEventListener('mousemove', move);
+  window.addEventListener('mouseup', end);
+  zone.addEventListener('touchstart', start, {passive:false});
+  zone.addEventListener('touchmove', move, {passive:false});
+  zone.addEventListener('touchend', end);
+}
 
-        // ==========================================
-        // 🗺️ 填字谜题网格矩阵搭建模块
-        // ==========================================
-        let runtimeActiveCellsMap = [];
+function submitWord(){
+  const word = selection.map(i=>wheelLetters[i]).join('');
+  const lvl = LEVELS[curLevel % LEVELS.length];
+  let matched = -1;
+  lvl.words.forEach((w,i)=>{ if(w.word === word && !wordsSolved[i]) matched = i; });
+  if(matched >= 0){
+    revealWord(lvl.words[matched]);
+    wordsSolved[matched] = true;
+    if(wordsSolved.every(Boolean)) setTimeout(completeLevel, 500);
+  } else if(word.length>0){
+    toast('Try again');
+  }
+  clearSelection();
+}
 
-        function loadLevel(levelIndex) {
-            puzzleMatrixBoard.innerHTML = "";
-            runtimeActiveCellsMap = [];
-            let config = GAME_LEVELS_DATABASE[levelIndex];
-            interactiveSession.shuffledLetters = [...config.letters];
-            
-            // 分析网格边界大小位置
-            let minX = 100, maxX = -100, minY = 100, maxY = -100;
-            
-            config.targetWords.forEach(word => {
-                let meta = config.gridData[word];
-                for(let i=0; i<word.length; i++) {
-                    let cx = meta.d === "H" ? meta.x + i : meta.x;
-                    let cy = meta.d === "V" ? meta.y + i : meta.y;
-                    minX = Math.min(minX, cx); maxX = Math.max(maxX, cx);
-                    minY = Math.min(minY, cy); maxY = Math.max(maxY, cy);
-                }
-            });
+function revealWord(w){
+  w.cells.forEach(([r,c],i)=>{
+    setTimeout(()=>{
+      const key = r+','+c;
+      const tile = document.getElementById('tile-'+key);
+      if(!tile) return;
+      tile.classList.add('revealed','bounce');
+      const cellData = gridState[key];
+      if(cellData && cellData.bonus && !cellData.bonus.claimed){
+        cellData.bonus.claimed = true;
+        if(cellData.bonus.type === 'coin'){ coins += cellData.bonus.amount; toast('+'+cellData.bonus.amount+' coins'); }
+        else { bulbs += cellData.bonus.amount; toast('+'+cellData.bonus.amount+' bulb'); }
+        refreshHud();
+      }
+    }, i*90);
+  });
+}
 
-            let spanX = maxX - minX + 1;
-            let spanY = maxY - minY + 1;
-            puzzleMatrixBoard.style.width = `${spanX * 60}px`;
-            puzzleMatrixBoard.style.height = `${spanY * 60}px`;
+/* =================================================================
+   提示 (HINT)
+   ================================================================= */
+document.getElementById('btn-hint').addEventListener('click', ()=>{
+  if(bulbs < 1){ toast('Not enough bulbs'); return; }
+  const blanks = Object.keys(gridState).filter(k=>!gridState[k].revealed);
+  if(!blanks.length) return;
+  const key = blanks[Math.floor(Math.random()*blanks.length)];
+  gridState[key].revealed = true;
+  const tile = document.getElementById('tile-'+key);
+  if(tile) tile.classList.add('revealed','bounce');
+  bulbs -= 1; refreshHud();
+  checkAutoCompleteWords();
+});
 
-            // 部署节点进入矩阵
-            config.targetWords.forEach(word => {
-                let meta = config.gridData[word];
-                for(let i=0; i<word.length; i++) {
-                    let cx = meta.d === "H" ? meta.x + i : meta.x;
-                    let cy = meta.d === "V" ? meta.y + i : meta.y;
-                    
-                    let existing = runtimeActiveCellsMap.find(c => c.gx === cx && c.gy === cy);
-                    if(!existing) {
-                        let cellDiv = document.createElement("div");
-                        cellDiv.className = "letter-cell";
-                        cellDiv.style.left = `${(cx - minX) * 60}px`;
-                        cellDiv.style.top = `${(cy - minY) * 60}px`;
-                        cellDiv.innerText = ""; // 隐藏未拼出状态
+function checkAutoCompleteWords(){
+  const lvl = LEVELS[curLevel % LEVELS.length];
+  let allDone = true;
+  lvl.words.forEach((w,i)=>{
+    if(wordsSolved[i]) return;
+    const done = w.cells.every(([r,c])=> gridState[r+','+c].revealed);
+    if(done) wordsSolved[i] = true;
+  });
+  wordsSolved.forEach(v=>{ if(!v) allDone = false; });
+  if(allDone) setTimeout(completeLevel, 400);
+}
 
-                        // 检测是否被赋予了金币奖励或灯泡奖励
-                        let hasCoin = config.coinCells.some(cc => cc.w === word && cc.idx === i);
-                        let hasBulb = config.bulbCells.some(bc => bc.w === word && bc.idx === i);
-                        
-                        if(hasCoin) {
-                            cellDiv.innerHTML = `<svg class="cell-reward" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FFD700"/></svg>`;
-                        } else if(hasBulb) {
-                            cellDiv.innerHTML = `<svg class="cell-reward" viewBox="0 0 24 24"><path d="M9 21h6m-5-3h4m-5.5-3.5A7.5 7.5 0 1 1 16.5 14.5L15 18H9l-1.5-3.5z" fill="#FFEB3B"/></svg>`;
-                        }
+/* =================================================================
+   过关 / 进度 (LEVEL COMPLETE / PROGRESS)
+   ================================================================= */
+function completeLevel(){
+  const reward = 20 + curLevel*5;
+  coins += reward;
+  document.getElementById('complete-rewards').innerHTML =
+    `<div class="reward-chip"><span class="icon-circle coin">🪙</span><span class="amt">+${reward}</span></div>`;
+  openModal('modal-complete');
+  curLevel += 1;
+  refreshHud();
+  if(curLevel % 5 === 0) pendingGift = true;
+}
+let pendingGift = false;
 
-                        let cellRecord = {
-                            gx: cx, gy: cy, actualLetter: word[i], element: cellDiv,
-                            isDiscovered: false, hasCoinReward: hasCoin, hasBulbReward: hasBulb
-                        };
-                        runtimeActiveCellsMap.push(cellRecord);
-                        puzzleMatrixBoard.appendChild(cellDiv);
-                    }
-                }
-            });
+document.getElementById('btn-next-level').addEventListener('click', ()=>{
+  closeModal('modal-complete');
+  if(pendingGift){ pendingGift = false; showMysteryGift(); }
+  else loadLevel(curLevel);
+});
 
-            renderInteractiveWheelLetters();
-        }
+function showMysteryGift(){
+  const coinAmt = 40 + Math.floor(Math.random()*40);
+  document.getElementById('gift-rewards').innerHTML = `
+    <div class="reward-chip"><span class="icon-circle coin">🪙</span><span class="amt">+${coinAmt}</span></div>
+    <div class="reward-chip"><span class="icon-circle bulb">💡</span><span class="amt">+1</span></div>`;
+  coins += coinAmt; bulbs += 1; refreshHud();
+  openModal('modal-gift');
+}
+document.getElementById('btn-gift-claim').addEventListener('click', ()=>{
+  closeModal('modal-gift'); loadLevel(curLevel);
+});
 
-        // ==========================================
-        // 🎛️ 圆盘字母布局渲染与打乱重组
-        // ==========================================
-        function renderInteractiveWheelLetters() {
-            dynamicLettersContainer.innerHTML = "";
-            let arr = interactiveSession.shuffledLetters;
-            let radius = 95; // 环绕半径定位
-            let cx = 130, cy = 130; 
+/* =================================================================
+   转盘抽奖 (SPIN WHEEL)
+   ================================================================= */
+const SPIN_SEGMENTS = [
+  {label:'20', type:'coin', amount:20, color:'#49c6e0'},
+  {label:'💡', type:'bulb', amount:1,  color:'#ff7096'},
+  {label:'50', type:'coin', amount:50, color:'#f6b93b'},
+  {label:'10', type:'coin', amount:10, color:'#7be7c1'},
+  {label:'100',type:'coin', amount:100,color:'#c97a1a'},
+  {label:'15', type:'coin', amount:15, color:'#6fb3f0'},
+  {label:'75', type:'coin', amount:75, color:'#8de3a4'},
+  {label:'💡', type:'bulb', amount:1,  color:'#ff9dbb'},
+];
+function buildSpinWheel(){
+  const svg = document.getElementById('spin-wheel-svg');
+  const n = SPIN_SEGMENTS.length, cx=100, cy=100, r=95;
+  let html = '';
+  SPIN_SEGMENTS.forEach((seg,i)=>{
+    const a0 = (Math.PI*2*i/n) - Math.PI/2, a1 = (Math.PI*2*(i+1)/n) - Math.PI/2;
+    const x0 = cx+r*Math.cos(a0), y0 = cy+r*Math.sin(a0);
+    const x1 = cx+r*Math.cos(a1), y1 = cy+r*Math.sin(a1);
+    html += `<path d="M${cx},${cy} L${x0},${y0} A${r},${r} 0 0 1 ${x1},${y1} Z" fill="${seg.color}" stroke="#fff" stroke-width="2"/>`;
+    const am = (a0+a1)/2, lx = cx+r*0.62*Math.cos(am), ly = cy+r*0.62*Math.sin(am);
+    html += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-family="Baloo 2" font-weight="800" font-size="16" fill="#1c2b4a">${seg.label}</text>`;
+  });
+  svg.innerHTML = html;
+}
+buildSpinWheel();
 
-            for(let i=0; i<arr.length; i++) {
-                let angle = (i * 2 * Math.PI / arr.length) - Math.PI/2;
-                let x = cx + radius * Math.cos(angle);
-                let y = cy + radius * Math.sin(angle);
+function isNewDay(){
+  const today = new Date().toDateString();
+  const last = store.get('lastSpinDay', '');
+  return today !== last;
+}
+function updateSpinButton(){
+  const btn = document.getElementById('btn-spin');
+  if(isNewDay()){ btn.className='free'; btn.textContent='SPIN (FREE)'; }
+  else { btn.className='ad'; btn.textContent='📺 SPIN (WATCH AD)'; }
+}
+document.getElementById('btn-spin-open').addEventListener('click', ()=>{ updateSpinButton(); openModal('modal-spin'); });
 
-                let node = document.createElement("div");
-                node.className = "wheel-letter-node";
-                node.style.left = `${x}px`;
-                node.style.top = `${y}px`;
-                node.innerText = arr[i];
-                node.setAttribute("data-char", arr[i]);
-                node.setAttribute("data-index", i);
+let spinning = false;
+document.getElementById('btn-spin').addEventListener('click', ()=>{
+  if(spinning) return;
+  const free = isNewDay();
+  const doSpin = ()=>{
+    spinning = true;
+    const idx = Math.floor(Math.random()*SPIN_SEGMENTS.length);
+    const seg = SPIN_SEGMENTS[idx];
+    const n = SPIN_SEGMENTS.length;
+    const targetAngle = 360*4 + (360 - (idx*(360/n)) - (360/n/2));
+    const svg = document.getElementById('spin-wheel-svg');
+    svg.style.transform = `rotate(${targetAngle}deg)`;
+    setTimeout(()=>{
+      spinning = false;
+      if(seg.type==='coin'){ coins += seg.amount; toast('+'+seg.amount+' coins'); }
+      else { bulbs += seg.amount; toast('+'+seg.amount+' bulb'); }
+      refreshHud();
+      if(free) store.set('lastSpinDay', new Date().toDateString());
+      updateSpinButton();
+    }, 3300);
+  };
+  if(free){ doSpin(); }
+  else {
+    // 广告位：正式上线后在此处调用真实广告SDK，回调成功后再执行 doSpin()
+    const btn = document.getElementById('btn-spin');
+    btn.textContent = 'Loading ad…'; btn.disabled = true;
+    setTimeout(()=>{ btn.disabled=false; doSpin(); }, 1400);
+  }
+});
 
-                dynamicLettersContainer.appendChild(node);
-            }
-        }
+/* =================================================================
+   弹窗控制 & 其它按钮
+   ================================================================= */
+function openModal(id){ document.getElementById(id).style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click', ()=>closeModal(b.dataset.close)));
+document.getElementById('btn-settings').addEventListener('click', ()=>openModal('modal-settings'));
+document.getElementById('btn-home').addEventListener('click', ()=>{
+  closeModal('modal-settings');
+  document.getElementById('screen-game').style.display='none';
+  document.getElementById('screen-start').style.display='flex';
+});
+document.getElementById('wheel-shuffle').addEventListener('click', ()=>{
+  const lvl = LEVELS[curLevel % LEVELS.length];
+  renderWheel(lvl.letters);
+});
 
-        function shuffleLettersLayout() {
-            // 洗牌算法乱序
-            for (let i = interactiveSession.shuffledLetters.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [interactiveSession.shuffledLetters[i], interactiveSession.shuffledLetters[j]] = [interactiveSession.shuffledLetters[j], interactiveSession.shuffledLetters[i]];
-            }
-            renderInteractiveWheelLetters();
-        }
-
-        // ==========================================
-        // 🖱️ 手势与鼠标拖拽核心触控算法逻辑
-        // ==========================================
-        function setupInteractionListeners() {
-            touchPlate.addEventListener("mousedown", (e) => onDragStart(e.clientX, e.clientY));
-            touchPlate.addEventListener("mousemove", (e) => onDragMove(e.clientX, e.clientY));
-            window.addEventListener("mouseup", () => onDragEnd());
-
-            touchPlate.addEventListener("touchstart", (e) => {
-                if(e.touches.length > 0) onDragStart(e.touches[0].clientX, e.touches[0].clientY);
-            });
-            touchPlate.addEventListener("touchmove", (e) => {
-                if(e.touches.length > 0) onDragMove(e.touches[0].clientX, e.touches[0].clientY);
-            });
-            window.addEventListener("touchend", () => onDragEnd());
-        }
-
-        function onDragStart(clientX, clientY) {
-            let rect = touchPlate.getBoundingClientRect();
-            let localX = clientX - rect.left;
-            let localY = clientY - rect.top;
-
-            let hitNode = checkCollisionWithLetterNodes(localX, localY);
-            if(hitNode) {
-                interactiveSession.isTracking = true;
-                interactiveSession.activeSelectedLetters = [hitNode.char];
-                interactiveSession.activatedNodeElements = [hitNode.el];
-                hitNode.el.classList.add("active-node");
-                
-                interactiveSession.lastRegisteredX = hitNode.nx;
-                interactiveSession.lastRegisteredY = hitNode.ny;
-
-                liveWordBubble.innerText = interactiveSession.activeSelectedLetters.join("");
-                liveWordBubble.classList.add("show-bubble");
-                redrawLinkLines(localX, localY);
-            }
-        }
-
-        function onDragMove(clientX, clientY) {
-            if(!interactiveSession.isTracking) return;
-            let rect = touchPlate.getBoundingClientRect();
-            let localX = clientX - rect.left;
-            let localY = clientY - rect.top;
-
-            let hitNode = checkCollisionWithLetterNodes(localX, localY);
-            if(hitNode && !interactiveSession.activatedNodeElements.includes(hitNode.el)) {
-                interactiveSession.activeSelectedLetters.push(hitNode.char);
-                interactiveSession.activatedNodeElements.push(hitNode.el);
-                hitNode.el.classList.add("active-node");
-                
-                interactiveSession.lastRegisteredX = hitNode.nx;
-                interactiveSession.lastRegisteredY = hitNode.ny;
-                liveWordBubble.innerText = interactiveSession.activeSelectedLetters.join("");
-            }
-
-            redrawLinkLines(localX, localY);
-        }
-
-        function onDragEnd() {
-            if(!interactiveSession.isTracking) return;
-            interactiveSession.isTracking = false;
-            
-            let combinedWord = interactiveSession.activeSelectedLetters.join("");
-            evaluatePlayerWordSubmission(combinedWord);
-
-            // 清理视觉交互状态
-            interactiveSession.activatedNodeElements.forEach(el => el.classList.remove("active-node"));
-            interactiveSession.activeSelectedLetters = [];
-            interactiveSession.activatedNodeElements = [];
-            liveWordBubble.classList.remove("show-bubble");
-            linkLinesSvgCanvas.innerHTML = "";
-        }
-
-        function checkCollisionWithLetterNodes(lx, ly) {
-            let nodes = dynamicLettersContainer.querySelectorAll(".wheel-letter-node");
-            for(let node of nodes) {
-                let nx = parseFloat(node.style.left);
-                let ny = parseFloat(node.style.top);
-                let dist = Math.hypot(lx - nx, ly - ny);
-                if(dist < 28) {
-                    return { el: node, char: node.getAttribute("data-char"), nx: nx, ny: ny };
-                }
-            }
-            return null;
-        }
-
-        function redrawLinkLines(currentMouseX, currentMouseY) {
-            linkLinesSvgCanvas.innerHTML = "";
-            if(interactiveSession.activatedNodeElements.length === 0) return;
-
-            // 绘制已经串联锚定的折线段
-            for(let i=0; i < interactiveSession.activatedNodeElements.length - 1; i++) {
-                let x1 = parseFloat(interactiveSession.activatedNodeElements[i].style.left);
-                let y1 = parseFloat(interactiveSession.activatedNodeElements[i].style.top);
-                let x2 = parseFloat(interactiveSession.activatedNodeElements[i+1].style.left);
-                let y2 = parseFloat(interactiveSession.activatedNodeElements[i+1].style.top);
-                
-                let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute("x1", x1); line.setAttribute("y1", y1);
-                line.setAttribute("x2", x2); line.setAttribute("y2", y2);
-                line.setAttribute("stroke", "#5B7FFF"); line.setAttribute("stroke-width", "6");
-                line.setAttribute("stroke-linecap", "round");
-                linkLinesSvgCanvas.appendChild(line);
-            }
-
-            // 绘制从最后一个节点延伸到当前触控/鼠标位置的浮动引线
-            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            line.setAttribute("x1", interactiveSession.lastRegisteredX);
-            line.setAttribute("y1", interactiveSession.lastRegisteredY);
-            line.setAttribute("x2", currentMouseX);
-            line.setAttribute("y2", currentMouseY);
-            line.setAttribute("stroke", "rgba(91,127,255,0.5)");
-            line.setAttribute("stroke-width", "5");
-            line.setAttribute("stroke-linecap", "round");
-            linkLinesSvgCanvas.appendChild(line);
-        }
-
-        // ==========================================
-        // 🎯 单词核对审查判定算法
-        // ==========================================
-        function evaluatePlayerWordSubmission(word) {
-            let config = GAME_LEVELS_DATABASE[gameProgressState.currentLevelIndex];
-            
-            if(config.targetWords.includes(word)) {
-                let meta = config.gridData[word];
-                let minX = 100, minY = 100;
-                config.targetWords.forEach(w => {
-                    let m = config.gridData[w];
-                    minX = Math.min(minX, m.x); minY = Math.min(minY, m.y);
-                });
-
-                // 翻转填入网格方格中
-                for(let i=0; i<word.length; i++) {
-                    let cx = meta.d === "H" ? meta.x + i : meta.x;
-                    let cy = meta.d === "V" ? meta.y + i : meta.y;
-                    
-                    let cell = runtimeActiveCellsMap.find(c => c.gx === cx && c.gy === cy);
-                    if(cell && !cell.isDiscovered) {
-                        cell.isDiscovered = true;
-                        cell.element.innerText = cell.actualLetter;
-                        cell.element.classList.add("cell-pop");
-
-                        // 如果包含格内资产奖励，在此处当场予以兑现钱包加算
-                        if(cell.hasCoinReward) {
-                            playerWallet.coins += 10; // 获得格子金币
-                            cell.hasCoinReward = false;
-                        }
-                        if(cell.hasBulbReward) {
-                            playerWallet.bulbs += 1;  // 获得格子稀有灯泡
-                            cell.hasBulbReward = false;
-                        }
-                    }
-                }
-                refreshWalletUI();
-                checkLevelCompletionStatus();
-            }
-        }
-
-        function checkLevelCompletionStatus() {
-            let allCleared = runtimeActiveCellsMap.every(c => c.isDiscovered);
-            if(allCleared) {
-                setTimeout(() => {
-                    document.getElementById("label-clear-level-name").innerText = `LEVEL ${gameProgressState.currentLevelIndex + 1}`;
-                    popupLevelClear.classList.remove("hidden");
-                }, 500);
-            }
-        }
-
-        function advanceToNextLevel() {
-            popupLevelClear.classList.add("hidden");
-            playerWallet.coins += 20; // 固定的通关金币奖励
-            
-            gameProgressState.milestoneProgress += 1;
-            gameProgressState.currentLevelIndex += 1;
-            
-            if(gameProgressState.currentLevelIndex >= GAME_LEVELS_DATABASE.length) {
-                gameProgressState.currentLevelIndex = 0; // 满100关回到第1关循环进行
-            }
-
-            if(gameProgressState.milestoneProgress >= 5) {
-                // 刚好每破完5关，触发激活神秘的大奖礼包
-                popupMysteryGift.classList.remove("hidden");
-            } else {
-                refreshWalletUI();
-                loadLevel(gameProgressState.currentLevelIndex);
-            }
-        }
-
-        function claimMilestoneMysteryGift() {
-            popupMysteryGift.classList.add("hidden");
-            playerWallet.coins += 100; // 神秘组合大礼包：100金币
-            playerWallet.bulbs += 1;   // 神秘组合大礼包：1个稀有灯泡
-            gameProgressState.milestoneProgress = 0; // 重置进度周期
-            refreshWalletUI();
-            loadLevel(gameProgressState.currentLevelIndex);
-        }
-
-        // ==========================================
-        // 💡 提示外挂机能系统 (道具功能)
-        // ==========================================
-        function applyStandardHintPlugin() {
-            if(playerWallet.coins >= 100) {
-                let lockedCell = runtimeActiveCellsMap.find(c => !c.isDiscovered);
-                if(lockedCell) {
-                    playerWallet.coins -= 100;
-                    lockedCell.isDiscovered = true;
-                    lockedCell.element.innerText = lockedCell.actualLetter;
-                    lockedCell.element.classList.add("cell-pop");
-                    refreshWalletUI();
-                    checkLevelCompletionStatus();
-                }
-            }
-        }
-
-        function applyHammerHintPlugin() {
-            if(playerWallet.coins >= 200) {
-                // 铁锤提示：直接随机强制完全解开2个隐藏未知的方格
-                let unrevealed = runtimeActiveCellsMap.filter(c => !c.isDiscovered);
-                if(unrevealed.length > 0) {
-                    playerWallet.coins -= 200;
-                    let countToReveal = Math.min(unrevealed.length, 2);
-                    for(let i=0; i<countToReveal; i++) {
-                        unrevealed[i].isDiscovered = true;
-                        unrevealed[i].element.innerText = unrevealed[i].actualLetter;
-                        unrevealed[i].element.classList.add("cell-pop");
-                    }
-                    refreshWalletUI();
-                    checkLevelCompletionStatus();
-                }
-            }
-        }
-
-        // ==========================================
-        // 🎯 幸运大转盘引擎渲染与广告模拟驱动
-        // ==========================================
-        let isDiskSpinningState = false;
-
-        function buildLotteryWheelSegments() {
-            const disk = document.getElementById("spinning-disk-node");
-            disk.innerHTML = "";
-            for(let i=0; i<8; i++) {
-                let txt = document.createElement("div");
-                txt.className = "disk-segment-text";
-                txt.style.transform = `translate(-50%, -50%) rotate(${i * 45 + 22.5}deg)`;
-                txt.innerText = WHEEL_REWARDS_CONFIG[i].text;
-                disk.appendChild(txt);
-            }
-
-            document.getElementById("btn-action-spin").addEventListener("click", () => triggerLotteryWheelSpinOperation());
-        }
-
-        function triggerLotteryWheelSpinOperation() {
-            if(isDiskSpinningState) return;
-
-            if(!gameProgressState.isFreeSpinAvailable) {
-                // 需要看广告模拟器
-                popupLuckyWheel.classList.add("hidden");
-                popupAdSimulator.classList.remove("hidden");
-                let count = 5;
-                document.getElementById("label-ad-timer").innerText = count;
-                
-                let timer = setInterval(() => {
-                    count--;
-                    document.getElementById("label-ad-timer").innerText = count;
-                    if(count <= 0) {
-                        clearInterval(timer);
-                        popupAdSimulator.classList.add("hidden");
-                        popupLuckyWheel.classList.remove("hidden");
-                        // 广告看完，强制许可允许其抽奖
-                        executeSpinDiskRotationLogic();
-                    }
-                }, 1000);
-            } else {
-                // 首次免费，直接开抽
-                gameProgressState.isFreeSpinAvailable = false;
-                executeSpinDiskRotationLogic();
-            }
-        }
-
-        function executeSpinDiskRotationLogic() {
-            isDiskSpinningState = true;
-            let disk = document.getElementById("spinning-disk-node");
-            
-            // 采用加权概率分配：随机一个扇区，控制灯泡(Index 4)处于极低爆率范围
-            let targetIndex = Math.floor(Math.random() * 8);
-            if(targetIndex === 4 && Math.random() > 0.15) { 
-                targetIndex = 0; // 强行把原本抽中灯泡的低概率拦截降级为普通金币
-            }
-
-            let sectorDegrees = 45;
-            let targetAngleOffset = 360 - (targetIndex * sectorDegrees + 22.5);
-            let totalRotationDegrees = 1440 + targetAngleOffset; // 基础多转四圈以实现动画美感
-
-            disk.style.transform = `rotate(${totalRotationDegrees}deg)`;
-
-            setTimeout(() => {
-                isDiskSpinningState = false;
-                // 复位磁盘CSS角度以便下次继续累加旋转
-                disk.style.transition = "none";
-                disk.style.transform = `rotate(${targetAngleOffset}deg)`;
-                setTimeout(() => disk.style.transition = "transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)", 50);
-
-                // 发放结算抽奖奖品
-                let payout = WHEEL_REWARDS_CONFIG[targetIndex];
-                if(payout.type === "coin") {
-                    playerWallet.coins += payout.amount;
-                } else if(payout.type === "bulb") {
-                    playerWallet.bulbs += payout.amount;
-                }
-                
-                refreshWalletUI();
-            }, 4100);
-        }
-    </script>
+/* =================================================================
+   启动 (BOOT)
+   ================================================================= */
+document.getElementById('btn-start').addEventListener('click', ()=>{
+  document.getElementById('screen-start').style.display='none';
+  document.getElementById('screen-game').style.display='block';
+  initWheelEvents();
+  loadLevel(curLevel);
+});
+applyTheme(0);
+</script>
 </body>
 </html>
