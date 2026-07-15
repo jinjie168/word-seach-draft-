@@ -67,7 +67,7 @@ window.__crazySdkReady = false;
   }
   .pill{border-radius:999px; display:flex; align-items:center; gap:8px; padding:8px 16px 8px 8px;}
   .pill .icon-circle{width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; box-shadow:inset 0 -2px 4px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.2);}
-  .pill .icon-circle.coin{background:radial-gradient(circle at 35% 30%, #ffe9a8, var(--gold) 60%, var(--gold-deep) 100%);}
+  .pill .icon-circle.coin{background:radial-gradient(circle at 35% 30%, #ffe9a8, var(--gold) 60%, var(--gold-deep) 100%); font-family:'Baloo 2',sans-serif; font-weight:800; color:#7a4a10; font-size:18px;}
   .pill .icon-circle.bulb{background:radial-gradient(circle at 35% 30%, #d6f7ff, var(--sky) 60%, var(--sky-deep) 100%);}
   .pill .value{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:19px; color:var(--ink); min-width:20px;}
   .icon-btn{width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; cursor:pointer; border:none; color:var(--ink);}
@@ -86,11 +86,17 @@ window.__crazySdkReady = false;
   #credit-row .logo-frame img{width:100%; height:100%; object-fit:cover; border-radius:7px; display:block;}
 
   /* ===================== 顶部HUD (top HUD) ===================== */
-  #hud-top{position:absolute; top:18px; left:18px; right:18px; z-index:4; display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  #hud-top{position:absolute; top:18px; left:18px; right:18px; z-index:4; display:none; align-items:center; justify-content:space-between; gap:12px;}
   #hud-left{display:flex; gap:10px;}
   #progress-wrap{flex:1; max-width:340px; display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0;}
   #progress-label{font-family:'Baloo 2'; font-size:clamp(11px,3vmin,14px); letter-spacing:1px; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,0.4); text-transform:uppercase; white-space:nowrap;}
   #progress-track{position:relative; width:100%; height:16px; border-radius:999px; background:rgba(20,25,40,0.45); border:1px solid rgba(255,255,255,0.35); overflow:visible;}
+  #timer-wrap{display:flex; align-items:center; gap:6px; width:100%; margin-top:2px;}
+  #timer-icon{font-size:13px;}
+  #timer-track{flex:1; height:9px; border-radius:999px; background:rgba(20,25,40,0.45); border:1px solid rgba(255,255,255,0.3); overflow:hidden;}
+  #timer-fill{height:100%; width:100%; border-radius:999px; background:linear-gradient(90deg,#7be7c1,#f6b93b); transition:width 1s linear, background .3s;}
+  #timer-fill.low{background:linear-gradient(90deg,#ff9d5c,#ff5050); animation:timerPulse .5s infinite;}
+  @keyframes timerPulse{0%,100%{opacity:1;}50%{opacity:.55;}}
   #progress-fill{height:100%; border-radius:999px; background:linear-gradient(90deg,#7be7c1,var(--sky)); transition:width .5s cubic-bezier(.2,.8,.3,1);}
   #progress-gift{position:absolute; right:-4px; top:50%; transform:translateY(-50%); font-size:22px; filter:drop-shadow(0 3px 4px rgba(0,0,0,0.4));}
 
@@ -122,6 +128,8 @@ window.__crazySdkReady = false;
   #wheel-svg polyline{fill:none; stroke:var(--gold-deep); stroke-width:11; stroke-linecap:round; stroke-linejoin:round; opacity:1;}
   .letter-btn{position:absolute; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Baloo 2'; font-weight:800; color:var(--ink); cursor:pointer; transition:transform .12s;}
   .letter-btn.active{background:none; color:#5a3300; box-shadow:none;}
+  .letter-btn.bomb::after{content:'💣'; position:absolute; top:-8px; right:-6px; font-size:0.55em; filter:drop-shadow(0 2px 2px rgba(0,0,0,.5)); animation:bombWiggle .4s infinite;}
+  @keyframes bombWiggle{0%,100%{transform:rotate(-8deg);}50%{transform:rotate(8deg);}}
   #wheel-svg .dot{ fill:url(#dotGrad); }
   #wheel-shuffle{position:absolute; left:50%; top:50%; width:clamp(34px,10vmin,46px); height:clamp(34px,10vmin,46px); margin-left:calc(clamp(34px,10vmin,46px) / -2); margin-top:calc(clamp(34px,10vmin,46px) / -2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:clamp(15px,4vmin,21px); color:#9a8a6a; cursor:pointer; background:rgba(255,255,255,0.5);}
   #wheel-shuffle:active{transform:scale(.9) rotate(120deg); transition:transform .3s;}
@@ -170,7 +178,9 @@ window.__crazySdkReady = false;
   /* gift / level complete */
   .reward-row{display:flex; justify-content:center; gap:18px; margin:18px 0 22px;}
   .reward-chip{display:flex; flex-direction:column; align-items:center; gap:6px;}
-  .reward-chip .icon-circle{width:52px; height:52px; font-size:24px;}
+  .reward-chip .icon-circle{width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:inset 0 -2px 4px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.25);}
+  .reward-chip .icon-circle.coin{background:radial-gradient(circle at 35% 30%, #ffe9a8, var(--gold) 60%, var(--gold-deep) 100%); font-family:'Baloo 2',sans-serif; font-weight:800; color:#7a4a10;}
+  .reward-chip .icon-circle.bulb{background:radial-gradient(circle at 35% 30%, #d6f7ff, var(--sky) 60%, var(--sky-deep) 100%);}
   .reward-chip .amt{font-family:'Baloo 2'; font-weight:800; font-size:17px; color:var(--ink);}
   .btn-primary{font-family:'Baloo 2'; font-weight:700; font-size:18px; color:#5a3300; background:linear-gradient(180deg,#ffe27a,var(--gold) 55%,var(--gold-deep)); border:none; padding:14px 40px; border-radius:999px; box-shadow:0 7px 0 #a8620f; cursor:pointer;}
   .btn-primary:active{transform:translateY(5px); box-shadow:none;}
@@ -202,12 +212,13 @@ window.__crazySdkReady = false;
   <!-- ================= TOP HUD ================= -->
   <div id="hud-top">
     <div id="hud-left">
-      <div class="pill glass"><span class="icon-circle coin">🪙</span><span class="value" id="coin-count">0</span></div>
+      <div class="pill glass"><span class="icon-circle coin">¢</span><span class="value" id="coin-count">0</span></div>
       <div class="pill glass"><span class="icon-circle bulb">💡</span><span class="value" id="bulb-count">0</span></div>
     </div>
     <div id="progress-wrap">
       <span id="progress-label">Voyage Progress</span>
       <div id="progress-track"><div id="progress-fill" style="width:0%"></div><span id="progress-gift">🎁</span></div>
+      <div id="timer-wrap"><span id="timer-icon">💣</span><div id="timer-track"><div id="timer-fill"></div></div></div>
     </div>
     <button class="icon-btn glass" id="btn-settings">⚙️</button>
   </div>
@@ -291,6 +302,15 @@ window.__crazySdkReady = false;
       <div style="font-size:46px;">⭐</div>
       <div class="reward-row" id="complete-rewards"></div>
       <button class="btn-primary" id="btn-next-level">CONTINUE</button>
+    </div>
+  </div>
+  <!-- ================= TIME'S UP MODAL ================= -->
+  <div class="modal-backdrop" id="modal-timeup">
+    <div class="modal-card glass">
+      <p class="modal-title">⏰ Time's Up!</p>
+      <p style="font-family:'Nunito'; font-weight:700; color:var(--ink-soft); margin:-8px 0 18px;">Watch an ad for +15s, or retry this level.</p>
+      <button class="btn-primary" id="btn-timeup-ad" style="width:100%; margin-bottom:10px;">📺 WATCH AD (+15s)</button>
+      <button class="btn-primary" id="btn-timeup-retry" style="width:100%; background:linear-gradient(180deg,#9fb4d8,#5c7aab); box-shadow:0 7px 0 #3f5a85;">🔄 RETRY LEVEL</button>
     </div>
   </div>
 
@@ -527,6 +547,95 @@ function toast(msg){
 let gridState = {}; // "r,c" -> {letter, revealed, bonus}
 let wordsSolved = [];
 
+/* =================================================================
+   限时倒数 + 炸弹字母 (Time Attack + Bomb Letter)
+   ================================================================= */
+let timeLeft = 0, currentTimeLimit = 0, timerInterval = null;
+let bombIdx = null, bombSpawnTimeout = null, bombFuseInterval = null;
+
+function isAnyModalOpen(){
+  return Array.from(document.querySelectorAll('.modal-backdrop')).some(m => m.style.display === 'flex');
+}
+function computeTimeLimit(lvl){
+  const cells = new Set();
+  lvl.words.forEach(w => w.cells.forEach(c => cells.add(c.join(','))));
+  return 25 + cells.size * 5; // 格仔越多，时间越多
+}
+function updateTimerBar(){
+  const pct = Math.max(0, Math.min(100, (timeLeft/currentTimeLimit)*100));
+  const fill = document.getElementById('timer-fill');
+  fill.style.width = pct+'%';
+  fill.classList.toggle('low', pct < 25);
+}
+function tickTimer(){
+  if(isAnyModalOpen()) return;
+  timeLeft -= 1;
+  updateTimerBar();
+  if(timeLeft <= 0){ clearInterval(timerInterval); levelTimeUp(); }
+}
+function startLevelTimer(lvl){
+  clearInterval(timerInterval);
+  currentTimeLimit = computeTimeLimit(lvl);
+  timeLeft = currentTimeLimit;
+  updateTimerBar();
+  timerInterval = setInterval(tickTimer, 1000);
+}
+function stopLevelTimer(){ clearInterval(timerInterval); }
+function levelTimeUp(){
+  stopLevelTimer(); clearBomb();
+  openModal('modal-timeup');
+}
+
+function scheduleBomb(){
+  clearTimeout(bombSpawnTimeout);
+  const delay = 8000 + Math.random()*6000;
+  bombSpawnTimeout = setTimeout(()=>{
+    if(isAnyModalOpen()){ scheduleBomb(); return; }
+    spawnBomb();
+  }, delay);
+}
+function spawnBomb(){
+  if(!wheelLetters.length) return;
+  bombIdx = Math.floor(Math.random()*wheelLetters.length);
+  const btn = document.querySelector('.letter-btn[data-idx="'+bombIdx+'"]');
+  if(btn) btn.classList.add('bomb');
+  let fuse = 5;
+  clearInterval(bombFuseInterval);
+  bombFuseInterval = setInterval(()=>{
+    if(isAnyModalOpen()) return;
+    fuse -= 1;
+    if(fuse <= 0){ clearInterval(bombFuseInterval); explodeBomb(); }
+  }, 1000);
+}
+function defuseBomb(){
+  if(bombIdx === null) return;
+  const btn = document.querySelector('.letter-btn[data-idx="'+bombIdx+'"]');
+  if(btn) btn.classList.remove('bomb');
+  clearInterval(bombFuseInterval);
+  bombIdx = null;
+  scheduleBomb();
+}
+function explodeBomb(){
+  const btn = document.querySelector('.letter-btn[data-idx="'+bombIdx+'"]');
+  if(btn) btn.classList.remove('bomb');
+  bombIdx = null;
+  const penalty = Math.min(20, coins);
+  coins -= penalty;
+  refreshHud();
+  AudioEngine.playWrong();
+  toast('💣 Bomb exploded! -'+penalty+' coins');
+  scheduleBomb();
+}
+function clearBomb(){
+  clearTimeout(bombSpawnTimeout);
+  clearInterval(bombFuseInterval);
+  if(bombIdx !== null){
+    const btn = document.querySelector('.letter-btn[data-idx="'+bombIdx+'"]');
+    if(btn) btn.classList.remove('bomb');
+  }
+  bombIdx = null;
+}
+
 function loadLevel(idx){
   const lvl = LEVELS[idx % LEVELS.length];
   document.getElementById('progress-label').textContent = 'Level ' + (curLevel + 1);
@@ -567,7 +676,7 @@ function loadLevel(idx){
         div.appendChild(letterSpan);
         if(cellData.bonus){
           const peek = document.createElement('span');
-          peek.className = 'peek'; peek.textContent = cellData.bonus.type==='coin' ? '🪙' : '💡';
+          peek.className = 'peek'; peek.textContent = cellData.bonus.type==='coin' ? '¢' : '💡';
           div.appendChild(peek);
         }
       } else {
@@ -578,6 +687,8 @@ function loadLevel(idx){
   }
 
   renderWheel(lvl.letters);
+  startLevelTimer(lvl);
+  scheduleBomb();
   refreshHud();
 }
 
@@ -634,7 +745,7 @@ function updateSelectionVisual(){
     const b = document.querySelector('.letter-btn[data-idx="'+idx+'"]');
     b.classList.add('active');
     const half = b.offsetWidth/2;
-    const cx = parseFloat(b.style.left)+half, cy = parseFloat(b.style.top)+half;
+    const cx = parseFloat(b.style.left), cy = parseFloat(b.style.top);
     pts.push(cx+','+cy);
     dotsSvg += `<circle class="dot" cx="${cx}" cy="${cy}" r="${half}"></circle>`;
   });
@@ -645,8 +756,9 @@ function updateSelectionVisual(){
   if(selection.length){
     const lastIdx = selection[selection.length-1];
     const lastBtn = document.querySelector('.letter-btn[data-idx="'+lastIdx+'"]');
-    const x = parseFloat(lastBtn.style.left) + lastBtn.offsetWidth/2;
-    const y = parseFloat(lastBtn.style.top) - lastBtn.offsetWidth/2 - 12;
+    const half = lastBtn.offsetWidth/2;
+    const x = parseFloat(lastBtn.style.left);
+    const y = parseFloat(lastBtn.style.top) - half - 12;
     preview.style.left = x + 'px';
     preview.style.top = y + 'px';
     preview.style.opacity = 1;
@@ -708,6 +820,7 @@ function submitWord(){
   lvl.words.forEach((w,i)=>{ if(w.word === word && !wordsSolved[i]) matched = i; });
   if(matched >= 0){
     AudioEngine.playCorrect();
+    if(bombIdx !== null && selection.includes(bombIdx)) defuseBomb();
     revealWord(lvl.words[matched]);
     wordsSolved[matched] = true;
     if(wordsSolved.every(Boolean)) setTimeout(completeLevel, 500);
@@ -781,11 +894,12 @@ function checkAutoCompleteWords(){
    过关 / 进度 (LEVEL COMPLETE / PROGRESS)
    ================================================================= */
 function completeLevel(){
+  stopLevelTimer(); clearBomb();
   AudioEngine.playLevelComplete();
   const reward = 20 + curLevel*5;
   coins += reward;
   document.getElementById('complete-rewards').innerHTML =
-    `<div class="reward-chip"><span class="icon-circle coin">🪙</span><span class="amt">+${reward}</span></div>`;
+    `<div class="reward-chip"><span class="icon-circle coin">¢</span><span class="amt">+${reward}</span></div>`;
   openModal('modal-complete');
   curLevel += 1;
   refreshHud();
@@ -803,7 +917,7 @@ function showMysteryGift(){
   AudioEngine.playGift();
   const coinAmt = 40 + Math.floor(Math.random()*40);
   document.getElementById('gift-rewards').innerHTML = `
-    <div class="reward-chip"><span class="icon-circle coin">🪙</span><span class="amt">+${coinAmt}</span></div>
+    <div class="reward-chip"><span class="icon-circle coin">¢</span><span class="amt">+${coinAmt}</span></div>
     <div class="reward-chip"><span class="icon-circle bulb">💡</span><span class="amt">+1</span></div>`;
   coins += coinAmt; bulbs += 1; refreshHud();
   openModal('modal-gift');
@@ -816,14 +930,14 @@ document.getElementById('btn-gift-claim').addEventListener('click', ()=>{
    转盘抽奖 (SPIN WHEEL)
    ================================================================= */
 const SPIN_SEGMENTS = [
-  {label:'20', type:'coin', amount:20, color:'#49c6e0'},
-  {label:'💡', type:'bulb', amount:1,  color:'#ff7096'},
-  {label:'50', type:'coin', amount:50, color:'#f6b93b'},
-  {label:'10', type:'coin', amount:10, color:'#7be7c1'},
-  {label:'100',type:'coin', amount:100,color:'#c97a1a'},
-  {label:'15', type:'coin', amount:15, color:'#6fb3f0'},
-  {label:'75', type:'coin', amount:75, color:'#8de3a4'},
-  {label:'💡', type:'bulb', amount:1,  color:'#ff9dbb'},
+  {label:'¢20',  type:'coin', amount:20, color:'#49c6e0'},
+  {label:'💡',   type:'bulb', amount:1,  color:'#ff7096'},
+  {label:'¢50',  type:'coin', amount:50, color:'#f6b93b'},
+  {label:'¢10',  type:'coin', amount:10, color:'#7be7c1'},
+  {label:'¢100', type:'coin', amount:100,color:'#c97a1a'},
+  {label:'¢15',  type:'coin', amount:15, color:'#6fb3f0'},
+  {label:'¢75',  type:'coin', amount:75, color:'#8de3a4'},
+  {label:'💡',   type:'bulb', amount:1,  color:'#ff9dbb'},
 ];
 function buildSpinWheel(){
   const svg = document.getElementById('spin-wheel-svg');
@@ -834,8 +948,9 @@ function buildSpinWheel(){
     const x0 = cx+r*Math.cos(a0), y0 = cy+r*Math.sin(a0);
     const x1 = cx+r*Math.cos(a1), y1 = cy+r*Math.sin(a1);
     html += `<path d="M${cx},${cy} L${x0},${y0} A${r},${r} 0 0 1 ${x1},${y1} Z" fill="${seg.color}" stroke="#fff" stroke-width="2"/>`;
-    const am = (a0+a1)/2, lx = cx+r*0.62*Math.cos(am), ly = cy+r*0.62*Math.sin(am);
-    html += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-family="Baloo 2" font-weight="800" font-size="16" fill="#1c2b4a">${seg.label}</text>`;
+    const am = (a0+a1)/2, lx = cx+r*0.6*Math.cos(am), ly = cy+r*0.6*Math.sin(am);
+    const deg = (am*180/Math.PI) + 90;
+    html += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-family="Baloo 2" font-weight="800" font-size="17" fill="#1c2b4a" transform="rotate(${deg},${lx},${ly})">${seg.label}</text>`;
   });
   svg.innerHTML = html;
 }
@@ -871,6 +986,49 @@ function confettiBurst(container){
 }
 
 let spinning = false;
+
+// 通用睇广告函数：真机(CrazyGames)用返官方SDK，其他环境(自己测试)自动退返模拟广告，唔会撞坏
+function requestRewardedAd(onSuccess, onFail){
+  if(window.__crazySdkReady && window.CrazyGames && window.CrazyGames.SDK){
+    window.CrazyGames.SDK.ad.requestAd('rewarded', {
+      adStarted: ()=>{ if(AudioEngine.ctx && AudioEngine.ctx.suspend) AudioEngine.ctx.suspend(); },
+      adError: (error)=>{
+        if(AudioEngine.ctx && AudioEngine.ctx.resume) AudioEngine.ctx.resume();
+        if(onFail) onFail();
+      },
+      adFinished: ()=>{
+        if(AudioEngine.ctx && AudioEngine.ctx.resume) AudioEngine.ctx.resume();
+        onSuccess();
+      }
+    });
+  } else {
+    // 冇平台SDK时(例如自己测试)嘅模拟广告，方便开发阶段照用
+    setTimeout(onSuccess, 1400);
+  }
+}
+
+document.getElementById('btn-timeup-ad').addEventListener('click', ()=>{
+  const btn = document.getElementById('btn-timeup-ad');
+  btn.disabled = true; btn.textContent = 'Loading ad…';
+  requestRewardedAd(
+    ()=>{
+      btn.disabled = false; btn.textContent = '📺 WATCH AD (+15s)';
+      closeModal('modal-timeup');
+      timeLeft += 15;
+      currentTimeLimit += 15;
+      updateTimerBar();
+      clearInterval(timerInterval);
+      timerInterval = setInterval(tickTimer, 1000);
+      scheduleBomb();
+    },
+    ()=>{ btn.disabled = false; btn.textContent = '📺 WATCH AD (+15s)'; toast('Ad not available, try again later'); }
+  );
+});
+document.getElementById('btn-timeup-retry').addEventListener('click', ()=>{
+  closeModal('modal-timeup');
+  loadLevel(curLevel);
+});
+
 document.getElementById('btn-spin').addEventListener('click', ()=>{
   if(spinning) return;
   const free = isNewDay();
@@ -895,26 +1053,11 @@ document.getElementById('btn-spin').addEventListener('click', ()=>{
   if(free){ doSpin(); }
   else {
     const btn = document.getElementById('btn-spin');
-    if(window.__crazySdkReady && window.CrazyGames && window.CrazyGames.SDK){
-      btn.disabled = true; btn.textContent = 'Loading ad…';
-      window.CrazyGames.SDK.ad.requestAd('rewarded', {
-        adStarted: ()=>{ if(AudioEngine.ctx && AudioEngine.ctx.suspend) AudioEngine.ctx.suspend(); },
-        adError: (error)=>{
-          btn.disabled = false; updateSpinButton();
-          if(AudioEngine.ctx && AudioEngine.ctx.resume) AudioEngine.ctx.resume();
-          toast('Ad not available, try again later');
-        },
-        adFinished: ()=>{
-          btn.disabled = false;
-          if(AudioEngine.ctx && AudioEngine.ctx.resume) AudioEngine.ctx.resume();
-          doSpin();
-        }
-      });
-    } else {
-      // 冇平台SDK时(例如自己测试)嘅模拟广告，方便开发阶段照用
-      btn.textContent = 'Loading ad…'; btn.disabled = true;
-      setTimeout(()=>{ btn.disabled=false; doSpin(); }, 1400);
-    }
+    btn.disabled = true; btn.textContent = 'Loading ad…';
+    requestRewardedAd(
+      ()=>{ btn.disabled = false; doSpin(); },
+      ()=>{ btn.disabled = false; updateSpinButton(); toast('Ad not available, try again later'); }
+    );
   }
 });
 
@@ -927,7 +1070,9 @@ document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',
 document.getElementById('btn-settings').addEventListener('click', ()=>openModal('modal-settings'));
 document.getElementById('btn-home').addEventListener('click', ()=>{
   closeModal('modal-settings');
+  stopLevelTimer(); clearBomb();
   document.getElementById('screen-game').style.display='none';
+  document.getElementById('hud-top').style.display='none';
   document.getElementById('screen-start').style.display='flex';
 });
 function refreshSoundButtons(){
@@ -943,6 +1088,10 @@ document.getElementById('btn-music').addEventListener('click', ()=>{ AudioEngine
 document.getElementById('wheel-shuffle').addEventListener('click', ()=>{
   const lvl = LEVELS[curLevel % LEVELS.length];
   renderWheel(lvl.letters);
+  if(bombIdx !== null){
+    const btn = document.querySelector('.letter-btn[data-idx="'+bombIdx+'"]');
+    if(btn) btn.classList.add('bomb');
+  }
 });
 
 /* =================================================================
@@ -954,6 +1103,7 @@ document.getElementById('btn-start').addEventListener('click', ()=>{
   refreshSoundButtons();
   document.getElementById('screen-start').style.display='none';
   document.getElementById('screen-game').style.display='block';
+  document.getElementById('hud-top').style.display='flex';
   initWheelEvents();
   loadLevel(curLevel);
 });
