@@ -102,6 +102,8 @@ window.__crazySdkReady = false;
   #monster-name{font-family:'Baloo 2'; font-weight:700; font-size:clamp(10px,2.6vmin,13px); letter-spacing:2px; text-transform:uppercase; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,.7);}
   #monster-icon{width:clamp(70px,18vmin,120px); height:clamp(70px,18vmin,120px); filter:drop-shadow(0 0 16px var(--chapter-glow)); animation:monsterBob 2.4s ease-in-out infinite;}
   #monster-icon.hit{animation:monsterHit .3s;}
+  #monster-icon.attack{animation:monsterAttack .5s;}
+  @keyframes monsterAttack{0%{transform:scale(1) rotate(0);}20%{transform:scale(1.25) rotate(-6deg);}40%{transform:scale(1.3) rotate(6deg);}60%{transform:scale(1.2) rotate(-4deg);}100%{transform:scale(1) rotate(0);}}
   @keyframes monsterBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
   @keyframes monsterHit{0%{filter:brightness(3) drop-shadow(0 0 24px #ff3b30);}100%{filter:drop-shadow(0 0 16px var(--chapter-glow));}}
   #monster-hp-track{width:clamp(90px,24vmin,160px); height:10px; border-radius:999px; background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.3); overflow:hidden;}
@@ -641,7 +643,7 @@ function startLevelTimer(lvl){
 }
 function stopLevelTimer(){ clearInterval(timerInterval); }
 function levelTimeUp(){
-  stopLevelTimer(); clearBomb();
+  stopLevelTimer(); clearBomb(); clearMonsterAttack();
   openModal('modal-timeup');
 }
 
@@ -716,6 +718,7 @@ function computeMonsterMaxHP(lvl){
   return lvl.words.reduce((s,w)=>s+w.word.length, 0);
 }
 const MONSTER_NAMES = { ghost:'Wailing Shade', spider:'Widow Weaver', eye:'The Watcher', claw:'Grave Reaper', bat:'Night Swarm' };
+let monsterAttackTimeout = null;
 function startMonster(lvl, levelIdx){
   monsterMaxHP = computeMonsterMaxHP(lvl);
   monsterHP = monsterMaxHP;
@@ -723,7 +726,27 @@ function startMonster(lvl, levelIdx){
   document.getElementById('monster-icon').innerHTML = monsterSvg(type);
   document.getElementById('monster-name').textContent = MONSTER_NAMES[type];
   updateMonsterHpBar();
+  scheduleMonsterAttack();
 }
+function scheduleMonsterAttack(){
+  clearTimeout(monsterAttackTimeout);
+  const delay = 9000 + Math.random()*6000;
+  monsterAttackTimeout = setTimeout(()=>{
+    if(isAnyModalOpen() || monsterHP <= 0){ scheduleMonsterAttack(); return; }
+    monsterAttack();
+  }, delay);
+}
+function monsterAttack(){
+  const icon = document.getElementById('monster-icon');
+  icon.classList.remove('attack'); void icon.offsetWidth; icon.classList.add('attack');
+  const dmg = 5;
+  timeLeft = Math.max(1, timeLeft - dmg);
+  updateTimerBar();
+  AudioEngine.playWrong();
+  toast('👹 '+document.getElementById('monster-name').textContent+' attacks! -'+dmg+'s');
+  scheduleMonsterAttack();
+}
+function clearMonsterAttack(){ clearTimeout(monsterAttackTimeout); }
 function updateMonsterHpBar(){
   const pct = Math.max(0, Math.min(100, (monsterHP/monsterMaxHP)*100));
   document.getElementById('monster-hp-fill').style.width = pct+'%';
@@ -1043,7 +1066,7 @@ function checkAutoCompleteWords(){
    过关 / 进度 (LEVEL COMPLETE / PROGRESS)
    ================================================================= */
 function completeLevel(){
-  stopLevelTimer(); clearBomb();
+  stopLevelTimer(); clearBomb(); clearMonsterAttack();
   AudioEngine.playLevelComplete();
   const reward = 20 + curLevel*5;
   coins += reward;
@@ -1223,7 +1246,7 @@ document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',
 document.getElementById('btn-settings').addEventListener('click', ()=>openModal('modal-settings'));
 document.getElementById('btn-home').addEventListener('click', ()=>{
   closeModal('modal-settings');
-  stopLevelTimer(); clearBomb();
+  stopLevelTimer(); clearBomb(); clearMonsterAttack();
   document.getElementById('screen-game').style.display='none';
   document.getElementById('hud-top').style.display='none';
   document.getElementById('screen-start').style.display='flex';
