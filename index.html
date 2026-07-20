@@ -74,6 +74,7 @@ window.__crazySdkReady = false;
   .life-heart.lost{opacity:.25; filter:grayscale(1);}
   .bg-stars{position:absolute; inset:0; background-image:radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,0.5) 50%, transparent), radial-gradient(1.5px 1.5px at 70% 65%, rgba(255,255,255,0.4) 50%, transparent), radial-gradient(1px 1px at 45% 80%, rgba(255,255,255,0.35) 50%, transparent), radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.3) 50%, transparent), radial-gradient(1.5px 1.5px at 10% 60%, rgba(255,255,255,0.4) 50%, transparent); opacity:.7;}
   #bg-scene{position:absolute; left:0; right:0; bottom:0; width:100%; height:42vh; max-height:340px;}
+  #bg-moon{position:absolute; right:12%; top:8%; width:clamp(50px,9vw,90px); height:clamp(50px,9vw,90px); border-radius:50%; background:var(--chapter-glow); opacity:.85; box-shadow:0 0 50px 20px var(--chapter-glow); transition:background 1.2s ease;}
 
   /* ===================== 通用玻璃组件 (glass components) ===================== */
   .glass{
@@ -108,6 +109,7 @@ window.__crazySdkReady = false;
   /* ===================== 顶部HUD (top HUD) ===================== */
   #hud-top{position:absolute; top:18px; left:18px; right:18px; z-index:4; display:none; align-items:center; justify-content:space-between; gap:12px;}
   #hud-left{display:flex; gap:8px; flex-wrap:wrap; max-width:44%;}
+  #hud-right{display:flex; gap:8px; flex-shrink:0;}
   #progress-wrap{flex:1; max-width:340px; display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0;}
   #progress-label{font-family:'Baloo 2'; font-size:clamp(11px,3vmin,14px); letter-spacing:1px; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,0.4); text-transform:uppercase; white-space:nowrap;}
   #progress-track{position:relative; width:100%; height:16px; border-radius:999px; background:rgba(20,25,40,0.45); border:1px solid rgba(255,255,255,0.35); overflow:visible;}
@@ -255,9 +257,8 @@ window.__crazySdkReady = false;
   <div class="bg-layer">
     <div id="bg-gradient"></div>
     <div class="bg-stars"></div>
+    <div id="bg-moon"></div>
     <svg id="bg-scene" viewBox="0 0 800 400" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="640" cy="80" r="42" style="fill:var(--chapter-glow)" opacity="0.85"/>
-      <circle cx="640" cy="80" r="70" style="fill:var(--chapter-glow)" opacity="0.15"/>
       <polygon points="0,260 90,230 180,255 260,220 340,250 430,215 520,245 610,225 700,250 800,230 800,400 0,400" fill="#0d0a18"/>
       <!-- 城堡 -->
       <g fill="#08060f">
@@ -315,7 +316,10 @@ window.__crazySdkReady = false;
       <div id="progress-track"><div id="progress-fill" style="width:0%"></div><span id="progress-gift">🎁</span></div>
       <div id="timer-wrap"><span id="timer-icon">💣</span><div id="timer-track"><div id="timer-fill"></div></div></div>
     </div>
-    <button class="icon-btn glass" id="btn-settings">⚙️</button>
+    <div id="hud-right">
+      <button class="icon-btn glass" id="btn-armory-hud" style="background:linear-gradient(180deg,#ffd97a,#e0a52c);">⚔️</button>
+      <button class="icon-btn glass" id="btn-settings">⚙️</button>
+    </div>
   </div>
 
   <!-- ================= GAME SCREEN ================= -->
@@ -617,6 +621,7 @@ document.getElementById('btn-armory-ingame').addEventListener('click', ()=>{
   renderArmory();
   openModal('modal-armory');
 });
+document.getElementById('btn-armory-hud').addEventListener('click', ()=>{ renderArmory(); openModal('modal-armory'); });
 
 let relics = store.get('relics', []);
 const RELIC_DEFS = {
@@ -782,6 +787,19 @@ let bombIdx = null, bombSpawnTimeout = null, bombFuseInterval = null;
 function isAnyModalOpen(){
   return Array.from(document.querySelectorAll('.modal-backdrop')).some(m => m.style.display === 'flex');
 }
+function positionGridArea(){
+  const grid = document.getElementById('grid-area');
+  const hud = document.getElementById('hud-top');
+  const isPortrait = window.innerHeight > window.innerWidth;
+  if(isPortrait && hud.style.display !== 'none'){
+    const bottom = hud.getBoundingClientRect().bottom;
+    grid.style.top = (bottom + 14) + 'px';
+  } else {
+    grid.style.top = ''; // 交返俾CSS嘅百分比(landscape冇呢个问题)
+  }
+}
+window.addEventListener('resize', ()=>{ clearTimeout(window.__gridResizeT); window.__gridResizeT = setTimeout(positionGridArea, 150); });
+window.addEventListener('orientationchange', ()=>{ setTimeout(positionGridArea, 200); });
 function computeTimeLimit(lvl){
   const cells = new Set();
   lvl.words.forEach(w => w.cells.forEach(c => cells.add(c.join(','))));
@@ -1015,6 +1033,7 @@ function applySkillCard(card){
 }
 
 function loadLevel(idx){
+  positionGridArea();
   const lvl = LEVELS[idx % LEVELS.length];
   const chapter = CHAPTERS[Math.floor(idx/20) % CHAPTERS.length];
   document.getElementById('progress-label').textContent = 'Lvl ' + (curLevel + 1) + ' · ' + chapter.name;
