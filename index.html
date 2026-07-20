@@ -69,11 +69,11 @@ window.__crazySdkReady = false;
   #monster-icon.boss{filter:drop-shadow(0 0 22px #ff2d2d);}
   .letter-btn.clawed{opacity:.35; pointer-events:none;}
   .letter-btn.clawed::before{content:'🩸'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:1.1em;}
-  #lives-row{display:flex; align-items:center; gap:3px; background:rgba(20,25,40,0.45); border:1px solid rgba(255,255,255,0.3); border-radius:999px; padding:8px 12px; font-size:14px;}
+  #lives-row{display:flex; align-items:center; gap:2px; background:rgba(20,25,40,0.45); border:1px solid rgba(255,255,255,0.3); border-radius:999px; padding:6px 10px; font-size:12px;}
   .life-heart{opacity:1; filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
   .life-heart.lost{opacity:.25; filter:grayscale(1);}
   .bg-stars{position:absolute; inset:0; background-image:radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,0.5) 50%, transparent), radial-gradient(1.5px 1.5px at 70% 65%, rgba(255,255,255,0.4) 50%, transparent), radial-gradient(1px 1px at 45% 80%, rgba(255,255,255,0.35) 50%, transparent), radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.3) 50%, transparent), radial-gradient(1.5px 1.5px at 10% 60%, rgba(255,255,255,0.4) 50%, transparent); opacity:.7;}
-  #bg-scene{position:absolute; inset:0; width:100%; height:100%;}
+  #bg-scene{position:absolute; left:0; right:0; bottom:0; width:100%; height:42vh; max-height:340px;}
 
   /* ===================== 通用玻璃组件 (glass components) ===================== */
   .glass{
@@ -97,6 +97,8 @@ window.__crazySdkReady = false;
   .title{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:clamp(40px,11vmin,64px); color:#fff; text-shadow:0 4px 18px rgba(0,0,0,0.45); letter-spacing:1px; margin:0 0 40px; text-transform:uppercase;}
   #btn-start{font-family:'Baloo 2'; font-weight:700; font-size:22px; color:#5a3300; background:linear-gradient(180deg,#ffe27a,var(--gold) 55%,var(--gold-deep)); border:none; padding:18px 56px; border-radius:999px; box-shadow:0 10px 0 #a8620f, 0 16px 26px rgba(0,0,0,0.35); cursor:pointer; letter-spacing:1px;}
   #btn-start:active{transform:translateY(6px); box-shadow:0 4px 0 #a8620f, 0 8px 14px rgba(0,0,0,0.3);}
+  #btn-armory{margin-top:14px; font-family:'Baloo 2'; font-weight:700; font-size:15px; color:#fff; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.35); padding:10px 26px; border-radius:999px; cursor:pointer; letter-spacing:1px;}
+  #btn-armory:active{transform:scale(.96);}
 
   #credit-row{position:absolute; left:22px; bottom:22px; display:flex; align-items:center; gap:10px; z-index:6;}
   #credit-row .by-text{font-family:'Baloo 2'; font-weight:700; font-size:14px; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,0.5); letter-spacing:2px;}
@@ -105,13 +107,13 @@ window.__crazySdkReady = false;
 
   /* ===================== 顶部HUD (top HUD) ===================== */
   #hud-top{position:absolute; top:18px; left:18px; right:18px; z-index:4; display:none; align-items:center; justify-content:space-between; gap:12px;}
-  #hud-left{display:flex; gap:10px;}
+  #hud-left{display:flex; gap:8px; flex-wrap:wrap; max-width:44%;}
   #progress-wrap{flex:1; max-width:340px; display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0;}
   #progress-label{font-family:'Baloo 2'; font-size:clamp(11px,3vmin,14px); letter-spacing:1px; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,0.4); text-transform:uppercase; white-space:nowrap;}
   #progress-track{position:relative; width:100%; height:16px; border-radius:999px; background:rgba(20,25,40,0.45); border:1px solid rgba(255,255,255,0.35); overflow:visible;}
 
   /* ===================== 小怪舞台 (prominent monster stage) ===================== */
-  #monster-stage{position:absolute; left:50%; top:20%; transform:translate(-50%,-50%); z-index:2; display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:none;}
+  #monster-stage{position:absolute; left:50%; top:24%; transform:translate(-50%,-50%); z-index:2; display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:none;}
   #monster-name{font-family:'Baloo 2'; font-weight:700; font-size:clamp(10px,2.6vmin,13px); letter-spacing:2px; text-transform:uppercase; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,.7);}
   #monster-icon{width:clamp(70px,18vmin,120px); height:clamp(70px,18vmin,120px); filter:drop-shadow(0 0 16px var(--chapter-glow)); animation:monsterBob 2.4s ease-in-out infinite;}
   #monster-icon.hit{animation:monsterHit .3s;}
@@ -121,8 +123,13 @@ window.__crazySdkReady = false;
   @keyframes monsterHit{0%{filter:brightness(3) drop-shadow(0 0 24px #ff3b30);}100%{filter:drop-shadow(0 0 16px var(--chapter-glow));}}
   #monster-hp-track{width:clamp(90px,24vmin,160px); height:10px; border-radius:999px; background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.3); overflow:hidden;}
   #monster-hp-fill{height:100%; width:100%; background:linear-gradient(90deg,#ff6b6b,#ff3b30); transition:width .4s ease;}
+  .dmg-pop{position:absolute; left:50%; top:0; transform:translateX(-50%); font-family:'Baloo 2'; font-weight:800; font-size:20px; color:#fff2a8; text-shadow:0 2px 4px rgba(0,0,0,.7), 0 0 8px rgba(255,180,40,.8); pointer-events:none; animation:dmgFloat .8s ease-out forwards; z-index:5;}
+  @keyframes dmgFloat{0%{opacity:1; transform:translate(-50%,0);}100%{opacity:0; transform:translate(-50%,-46px);}}
   @media (orientation: portrait){
-    #monster-stage{ top:48%; }
+    #monster-stage{ top:56%; gap:3px; }
+    #monster-icon{ width:clamp(48px,11vmin,68px); height:clamp(48px,11vmin,68px); }
+    #monster-name{ font-size:9px; }
+    #monster-hp-track{ width:clamp(70px,18vmin,110px); height:7px; }
   }
   #timer-wrap{display:flex; align-items:center; gap:6px; width:100%; margin-top:2px;}
   #timer-icon{font-size:13px;}
@@ -213,6 +220,23 @@ window.__crazySdkReady = false;
 
   /* gift / level complete */
   .reward-row{display:flex; justify-content:center; gap:18px; margin:18px 0 22px;}
+
+  .armory-row{display:flex; align-items:center; gap:12px; padding:12px 8px; border-bottom:1px solid rgba(0,0,0,0.08); text-align:left;}
+  .armory-row:last-child{border-bottom:none;}
+  .armory-icon{font-size:28px; width:40px; text-align:center; flex-shrink:0;}
+  .armory-info{flex:1; min-width:0;}
+  .armory-name{font-family:'Baloo 2'; font-weight:700; font-size:15px; color:var(--ink);}
+  .armory-desc{font-family:'Nunito'; font-weight:700; font-size:11px; color:var(--ink-soft);}
+  .armory-pips{display:flex; gap:3px; margin-top:3px;}
+  .armory-pip{width:8px; height:8px; border-radius:50%; background:#e5ddc9;}
+  .armory-pip.filled{background:var(--gold-deep);}
+  .armory-buy{font-family:'Baloo 2'; font-weight:700; font-size:12px; color:#5a3300; background:linear-gradient(180deg,#ffe27a,var(--gold)); border:none; padding:8px 14px; border-radius:999px; cursor:pointer; white-space:nowrap; flex-shrink:0;}
+  .armory-buy:disabled{opacity:.4; cursor:not-allowed;}
+
+  .relic-option{display:block; width:100%; text-align:left; background:var(--cream); border:2px solid #f0e4c8; border-radius:var(--radius-md); padding:14px; margin-bottom:10px; cursor:pointer;}
+  .relic-option:active{transform:scale(.98);}
+  .relic-name{font-family:'Baloo 2'; font-weight:700; font-size:15px; color:var(--ink);}
+  .relic-desc{font-family:'Nunito'; font-weight:700; font-size:12px; color:var(--ink-soft); margin-top:2px;}
   .reward-chip{display:flex; flex-direction:column; align-items:center; gap:6px;}
   .reward-chip .icon-circle{width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:inset 0 -2px 4px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.25);}
   .reward-chip .icon-circle.coin{background:radial-gradient(circle at 35% 30%, #ffe9a8, var(--gold) 60%, var(--gold-deep) 100%); font-family:'Baloo 2',sans-serif; font-weight:800; color:#7a4a10;}
@@ -272,6 +296,7 @@ window.__crazySdkReady = false;
   <div id="screen-start">
     <h1 class="title">WORDERLAND</h1>
     <button id="btn-start">START GAME</button>
+    <button id="btn-armory">⚔️ ARMORY</button>
     <div id="credit-row">
       <span class="by-text">BY</span>
       <div class="logo-frame"><img src="data:image/jpeg;base64,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" alt="Texxell"></div>
@@ -340,6 +365,7 @@ window.__crazySdkReady = false;
         <button class="icon-btn" id="btn-home">🏠</button>
         <button class="icon-btn green" id="btn-sound">🔊</button>
         <button class="icon-btn green" id="btn-music">🎵</button>
+        <button class="icon-btn" id="btn-armory-ingame" style="background:linear-gradient(180deg,#ffd97a,#e0a52c); box-shadow:0 5px 0 #a8730f;">⚔️</button>
       </div>
     </div>
   </div>
@@ -387,6 +413,24 @@ window.__crazySdkReady = false;
       <button class="btn-primary" id="btn-timeup-ad" style="width:100%; margin-bottom:10px;">📺 WATCH AD: +15s</button>
       <button class="btn-primary" id="btn-timeup-retry-ad" style="width:100%; margin-bottom:10px; background:linear-gradient(180deg,#9fb4d8,#5c7aab); box-shadow:0 7px 0 #3f5a85;">📺 WATCH AD: RETRY FRESH</button>
       <button class="btn-primary" id="btn-timeup-life" style="width:100%; background:linear-gradient(180deg,#ff9d9d,#e85c5c); box-shadow:0 7px 0 #b83c3c;">💔 USE A LIFE: RETRY</button>
+    </div>
+  </div>
+  <!-- ================= ARMORY MODAL ================= -->
+  <div class="modal-backdrop" id="modal-armory">
+    <div class="modal-card glass">
+      <button class="close-x" data-close="modal-armory">✕</button>
+      <p class="modal-title">⚔️ Armory</p>
+      <p style="font-family:'Nunito'; font-weight:700; color:var(--ink-soft); margin:-8px 0 16px; font-size:13px;">Permanent upgrades, bought with coins</p>
+      <div id="armory-list"></div>
+    </div>
+  </div>
+
+  <!-- ================= RELIC DRAFT MODAL ================= -->
+  <div class="modal-backdrop" id="modal-relic">
+    <div class="modal-card glass">
+      <p class="modal-title">🔮 Choose a Relic</p>
+      <p style="font-family:'Nunito'; font-weight:700; color:var(--ink-soft); margin:-8px 0 16px; font-size:13px;">A permanent boon for the rest of your journey</p>
+      <div id="relic-options"></div>
     </div>
   </div>
 
@@ -525,6 +569,85 @@ bulbs = store.get('bulbs', 0);
 curLevel = store.get('level', 0);
 lives = store.get('lives', 3);
 
+/* =================================================================
+   永久强化 (Armory) + 遗物 (Relics)
+   ================================================================= */
+let upgrades = store.get('upgrades', {sword:0, armor:0, torch:0});
+const UPGRADE_DEFS = {
+  sword: {icon:'⚔️', name:'Sword', desc:'+1 damage per word', max:3, baseCost:60},
+  armor: {icon:'🛡️', name:'Armor', desc:'Monster attacks steal less time', max:3, baseCost:60},
+  torch: {icon:'🔥', name:'Torch', desc:'+5s starting time per level', max:3, baseCost:60},
+};
+function upgradeCost(id){ return UPGRADE_DEFS[id].baseCost * (upgrades[id]+1); }
+function renderArmory(){
+  const list = document.getElementById('armory-list');
+  list.innerHTML = Object.keys(UPGRADE_DEFS).map(id=>{
+    const def = UPGRADE_DEFS[id];
+    const lvl = upgrades[id];
+    const maxed = lvl >= def.max;
+    const cost = upgradeCost(id);
+    let pips = '';
+    for(let i=0;i<def.max;i++) pips += `<span class="armory-pip${i<lvl?' filled':''}"></span>`;
+    return `<div class="armory-row">
+      <div class="armory-icon">${def.icon}</div>
+      <div class="armory-info">
+        <div class="armory-name">${def.name} <span style="font-weight:600;font-size:11px;color:var(--ink-soft)">Lv.${lvl}</span></div>
+        <div class="armory-desc">${def.desc}</div>
+        <div class="armory-pips">${pips}</div>
+      </div>
+      <button class="armory-buy" data-upgrade="${id}" ${maxed || coins<cost ? 'disabled':''}>${maxed ? 'MAX' : '¢'+cost}</button>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.armory-buy').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.upgrade;
+      const cost = upgradeCost(id);
+      if(upgrades[id] >= UPGRADE_DEFS[id].max || coins < cost) return;
+      coins -= cost; upgrades[id] += 1;
+      store.set('upgrades', upgrades);
+      refreshHud(); renderArmory();
+      AudioEngine.playGift();
+      toast('Upgraded '+UPGRADE_DEFS[id].name+'!');
+    });
+  });
+}
+document.getElementById('btn-armory').addEventListener('click', ()=>{ renderArmory(); openModal('modal-armory'); });
+document.getElementById('btn-armory-ingame').addEventListener('click', ()=>{
+  closeModal('modal-settings');
+  renderArmory();
+  openModal('modal-armory');
+});
+
+let relics = store.get('relics', []);
+const RELIC_DEFS = {
+  iron_skin:   {name:'Iron Skin',      desc:"Bomb explosions no longer cost coins"},
+  lucky_charm: {name:'Lucky Charm',    desc:'Skill card drop chance +20%'},
+  swift_boots: {name:'Swift Boots',    desc:'+10s starting time, every level'},
+  guardian:    {name:'Guardian Angel', desc:"The monster's first attack each level is blocked"},
+  combo_master:{name:'Combo Master',   desc:'Combo bonus triggers one hit sooner'},
+};
+function offerRelicDraft(){
+  const available = Object.keys(RELIC_DEFS).filter(id => !relics.includes(id));
+  if(!available.length) return false;
+  const shuffled = available.sort(()=>Math.random()-0.5).slice(0,3);
+  document.getElementById('relic-options').innerHTML = shuffled.map(id=>{
+    const def = RELIC_DEFS[id];
+    return `<button class="relic-option" data-relic="${id}"><div class="relic-name">${def.name}</div><div class="relic-desc">${def.desc}</div></button>`;
+  }).join('');
+  document.querySelectorAll('.relic-option').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      relics.push(btn.dataset.relic);
+      store.set('relics', relics);
+      closeModal('modal-relic');
+      AudioEngine.playGift();
+      toast('Relic bonded: '+RELIC_DEFS[btn.dataset.relic].name);
+      loadLevel(curLevel);
+    }, {once:true});
+  });
+  openModal('modal-relic');
+  return true;
+}
+
 function renderLives(){
   const row = document.getElementById('lives-row');
   if(!row) return;
@@ -662,7 +785,10 @@ function isAnyModalOpen(){
 function computeTimeLimit(lvl){
   const cells = new Set();
   lvl.words.forEach(w => w.cells.forEach(c => cells.add(c.join(','))));
-  return 25 + cells.size * 5; // 格仔越多，时间越多
+  let t = 25 + cells.size * 5; // 格仔越多，时间越多
+  t += upgrades.torch * 5;
+  if(relics.includes('swift_boots')) t += 10;
+  return t;
 }
 function updateTimerBar(){
   const pct = Math.max(0, Math.min(100, (timeLeft/currentTimeLimit)*100));
@@ -733,11 +859,15 @@ function explodeBomb(){
   const btn = document.querySelector('.letter-btn[data-idx="'+bombIdx+'"]');
   if(btn) btn.classList.remove('bomb');
   bombIdx = null;
-  const penalty = Math.min(20, coins);
-  coins -= penalty;
-  refreshHud();
+  if(relics.includes('iron_skin')){
+    toast('🛡️ Iron Skin absorbed the blast!');
+  } else {
+    const penalty = Math.min(20, coins);
+    coins -= penalty;
+    refreshHud();
+    toast('💣 Bomb exploded! -'+penalty+' coins');
+  }
   AudioEngine.playWrong();
-  toast('💣 Bomb exploded! -'+penalty+' coins');
   scheduleBomb();
 }
 function clearBomb(){
@@ -793,7 +923,15 @@ function scheduleMonsterAttack(){
     monsterAttack();
   }, delay);
 }
+let guardianUsedThisLevel = false;
 function monsterAttack(){
+  if(relics.includes('guardian') && !guardianUsedThisLevel){
+    guardianUsedThisLevel = true;
+    toast('👼 Guardian Angel blocked the attack!');
+    AudioEngine.playGift();
+    scheduleMonsterAttack();
+    return;
+  }
   const icon = document.getElementById('monster-icon');
   icon.classList.remove('attack'); void icon.offsetWidth; icon.classList.add('attack');
   AudioEngine.playGrowl();
@@ -803,7 +941,7 @@ function monsterAttack(){
     clawLetter();
     toast('🩸 '+name+' claws a letter!');
   } else {
-    const dmg = isBoss ? 8 : 5;
+    const dmg = Math.max(1, (isBoss ? 8 : 5) - upgrades.armor);
     timeLeft = Math.max(1, timeLeft - dmg);
     updateTimerBar();
     toast('👹 '+name+' attacks! -'+dmg+'s');
@@ -823,10 +961,16 @@ function updateMonsterHpBar(){
   document.getElementById('monster-hp-fill').style.width = pct+'%';
 }
 function damageMonster(amount){
+  amount += upgrades.sword;
   monsterHP = Math.max(0, monsterHP - amount);
   updateMonsterHpBar();
   const icon = document.getElementById('monster-icon');
   icon.classList.remove('hit'); void icon.offsetWidth; icon.classList.add('hit');
+  const pop = document.createElement('span');
+  pop.className = 'dmg-pop';
+  pop.textContent = '-'+amount;
+  document.getElementById('monster-stage').appendChild(pop);
+  setTimeout(()=>pop.remove(), 850);
   maybeDropSkillCard();
 }
 
@@ -838,7 +982,8 @@ const SKILL_CARDS = [
   {id:'ward',   label:'Ward',         desc:'Defuses the active bomb',icon:'🛡️'},
 ];
 function maybeDropSkillCard(){
-  if(Math.random() > 0.35) return;
+  const chance = relics.includes('lucky_charm') ? 0.55 : 0.35;
+  if(Math.random() > chance) return;
   const card = SKILL_CARDS[Math.floor(Math.random()*SKILL_CARDS.length)];
   applySkillCard(card);
 }
@@ -874,6 +1019,7 @@ function loadLevel(idx){
   const chapter = CHAPTERS[Math.floor(idx/20) % CHAPTERS.length];
   document.getElementById('progress-label').textContent = 'Lvl ' + (curLevel + 1) + ' · ' + chapter.name;
   applyTheme(idx);
+  guardianUsedThisLevel = false;
   startMonster(lvl, idx);
 
   // 建立 grid 坐标映射
@@ -1072,7 +1218,7 @@ function submitWord(){
     const now = Date.now();
     comboCount = (now - comboLastAt < 4000) ? comboCount+1 : 1;
     comboLastAt = now;
-    if(comboCount >= 2){
+    if(comboCount >= (relics.includes('combo_master') ? 1 : 2)){
       const icon = document.getElementById('monster-icon');
       icon.classList.remove('attack'); void icon.offsetWidth; icon.classList.add('attack');
       timeLeft = Math.min(currentTimeLimit, timeLeft+3);
@@ -1165,13 +1311,23 @@ function completeLevel(){
   curLevel += 1;
   refreshHud();
   if(curLevel % 5 === 0) pendingGift = true;
+  if(isBoss) pendingRelicDraft = true;
 }
 let pendingGift = false;
+let pendingRelicDraft = false;
+
+function proceedAfterModals(){
+  if(pendingRelicDraft){
+    pendingRelicDraft = false;
+    if(offerRelicDraft()) return; // offerRelicDraft 自己会喺拣完之后 loadLevel
+  }
+  loadLevel(curLevel);
+}
 
 document.getElementById('btn-next-level').addEventListener('click', ()=>{
   closeModal('modal-complete');
   if(pendingGift){ pendingGift = false; showMysteryGift(); }
-  else loadLevel(curLevel);
+  else proceedAfterModals();
 });
 
 function showMysteryGift(){
@@ -1184,7 +1340,7 @@ function showMysteryGift(){
   openModal('modal-gift');
 }
 document.getElementById('btn-gift-claim').addEventListener('click', ()=>{
-  closeModal('modal-gift'); loadLevel(curLevel);
+  closeModal('modal-gift'); proceedAfterModals();
 });
 
 /* =================================================================
